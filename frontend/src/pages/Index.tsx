@@ -12,11 +12,36 @@ interface Message {
   content: string;
 }
 
+interface ChatSession {
+  id: string;
+  title: string;
+  messages: Message[];
+  createdAt: number;
+}
+
 const Index = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>(() => {
+    const saved = localStorage.getItem("prp-chat-sessions");
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [currentChatId, setCurrentChatId] = useState<string>(() => {
+    const saved = localStorage.getItem("prp-current-chat-id");
+    return saved || "";
+  });
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showWidgets, setShowWidgets] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const currentChat = chatSessions.find(chat => chat.id === currentChatId);
+  const messages = currentChat?.messages || [];
+
+  useEffect(() => {
+    localStorage.setItem("prp-chat-sessions", JSON.stringify(chatSessions));
+  }, [chatSessions]);
+
+  useEffect(() => {
+    localStorage.setItem("prp-current-chat-id", currentChatId);
+  }, [currentChatId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -26,26 +51,65 @@ const Index = () => {
     scrollToBottom();
   }, [messages]);
 
+  const createNewChat = () => {
+    const newChatId = `chat-${Date.now()}`;
+    const newChat: ChatSession = {
+      id: newChatId,
+      title: "New Chat",
+      messages: [],
+      createdAt: Date.now(),
+    };
+    setChatSessions(prev => [newChat, ...prev]);
+    setCurrentChatId(newChatId);
+  };
+
+  const selectChat = (chatId: string) => {
+    setCurrentChatId(chatId);
+  };
+
   const handleSendMessage = (content: string) => {
-    // Add user message
-    setMessages((prev) => [...prev, { role: "user", content }]);
+    if (!currentChatId) {
+      createNewChat();
+      return;
+    }
+
+    const userMessage: Message = { role: "user", content };
+    
+    setChatSessions(prev => prev.map(chat => {
+      if (chat.id === currentChatId) {
+        const updatedMessages = [...chat.messages, userMessage];
+        const newTitle = chat.messages.length === 0 ? content.slice(0, 30) + (content.length > 30 ? "..." : "") : chat.title;
+        return { ...chat, messages: updatedMessages, title: newTitle };
+      }
+      return chat;
+    }));
 
     // Simulate AI response
     setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "Hello! I'm the PRP AI Agent. I'm here to help you with all your Professional Readiness Program questions. You can ask me about badges, events, attendance, quizzes, and track your progress. How can I assist you today?",
-        },
-      ]);
+      const aiMessage: Message = {
+        role: "assistant",
+        content: "Hello! I'm the PRP AI Agent. I'm here to help you with all your Professional Readiness Program questions. You can ask me about badges, events, attendance, quizzes, and track your progress. How can I assist you today?",
+      };
+      
+      setChatSessions(prev => prev.map(chat => {
+        if (chat.id === currentChatId) {
+          return { ...chat, messages: [...chat.messages, aiMessage] };
+        }
+        return chat;
+      }));
     }, 1000);
   };
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
       {/* Sidebar */}
-      <Sidebar isCollapsed={isSidebarCollapsed} />
+      <Sidebar 
+        isCollapsed={isSidebarCollapsed}
+        onNewChat={createNewChat}
+        chatHistory={chatSessions.map(chat => ({ id: chat.id, title: chat.title }))}
+        onSelectChat={selectChat}
+        currentChatId={currentChatId}
+      />
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
@@ -63,10 +127,10 @@ const Index = () => {
               </Button>
               <div>
                 <h1 className="text-xl font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
-                  Mentra - PRP AI Agent 🤖
+                  PRP AI Agent 🤖
                 </h1>
                 <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                  Your AI Haven for Your Career Elevation
+                  Your Interactive Mentor
                 </p>
               </div>
             </div>
@@ -80,7 +144,7 @@ const Index = () => {
             </Button>
           </div>
           <p className="text-xs text-[hsl(var(--muted-foreground))] mt-2 italic">
-            "I’m here to make your PRP journey easier, one question at a time."
+            "Ask anything about PRP — from badges to events, I'm here to help!"
           </p>
         </header>
 
@@ -96,20 +160,19 @@ const Index = () => {
                       <span className="text-4xl">🤖</span>
                     </div>
                     <h2 className="text-3xl font-bold text-[hsl(var(--foreground))] mb-4 text-glow">
-                      Welcome to Mentra – PRP AI Agent
+                      Welcome to PRP AI Agent
                     </h2>
                     <p className="text-[hsl(var(--muted-foreground))] mb-8 text-lg">
                       Ready to track your PRP progress today? I can help you with:
                     </p>
                     <div className="grid grid-cols-2 gap-4 text-left">
                       {[
-                        "📖 Learn About PRP",
-                        "📊 Check My Attendance",
-                        "📅 What’s Coming Up?",
-                        "📝 My Quizzes & Results",
-                        "🏆 My Badge Progress",
-                        "📈 My PRP Overview",
-                        "🤝 Mentor Me, Mentra",
+                        "📚 PRP Documentation & FAQs",
+                        "📊 Track Your Attendance",
+                        "📅 Upcoming Events & Sessions",
+                        "✅ Quiz Schedules & Results",
+                        "🏆 Badge Progress & Achievements",
+                        "📈 Overall Progress Dashboard",
                       ].map((item, index) => (
                         <div
                           key={index}
