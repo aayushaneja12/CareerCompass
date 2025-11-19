@@ -1,6 +1,7 @@
-# backend/app.py
 from backend.graphstructure import build_graph
-from backend.state import GraphState, Message
+from backend.state import GraphState
+from langchain_core.messages import HumanMessage  
+
 
 def main():
     print("Mentra: PRP AI Agent backend. Type 'exit' to quit.\n")
@@ -14,7 +15,7 @@ def main():
         last_reply=None,
         intent=None,
         conversation_id=None,
-        user_id=None  # optional for now
+        user_id=None
     )
 
     while True:
@@ -23,18 +24,19 @@ def main():
         if user_input.strip().lower() == "exit":
             break
 
-        # Append user message
-        state.messages.append(Message(role="user", content=user_input))
+        # Append the user message in LangChain format
+        state.messages.append(HumanMessage(content=user_input))
 
-        # Run agent
+        # Run graph
         out = app.invoke(state)
 
-        # LangGraph returns dict → convert to GraphState
+        # Reconstruct new state
         state = GraphState(**out)
 
-        # Print reply
+        # Print the assistant reply
         reply = state.last_reply or "(no reply)"
         print("\nMentra:", reply, "\n")
+
 
 if __name__ == "__main__":
     main()
