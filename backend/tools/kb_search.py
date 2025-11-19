@@ -71,3 +71,4 @@ def kb_search_node(state: GraphState) -> GraphState:
     )
 
     return state
+
