@@ -147,7 +147,7 @@ Even if GitHub allows it, don't do it.
 - **Frontend UI/UX** → Trisha (primary), Rhea (secondary)
 - **Testing & Documentation** → Makhabat (primary)
 
-But everyone can work on anything — this is just to prevent chaos.
+But everyone can work on anything, this is just to prevent chaos.
 
 ## 9. If Something Breaks
 
@@ -182,3 +182,4 @@ This workflow ensures:
 - No conflicts exploding
 - All work is reviewed
 - The project stays clean and organized
+
