@@ -1,4 +1,3 @@
-# tools/fallback.py
 from backend.state import GraphState
 from backend.supabase_client import supabase
 

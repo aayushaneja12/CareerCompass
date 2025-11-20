@@ -1,18 +1,15 @@
 from __future__ import annotations
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, Annotated
 from pydantic import BaseModel, Field
-
-
-class Message(BaseModel):
-    role: Literal["user", "assistant", "system"]
-    content: str
+from langgraph.graph.message import add_messages
+from langchain_core.messages import BaseMessage   
 
 
 class Booking(BaseModel):
     name: Optional[str] = None
-    preferred_date: Optional[str] = None  # "2025-11-20"
-    preferred_time: Optional[str] = None  # "14:00"
-    topic: Optional[str] = None           # "Resume review"
+    preferred_date: Optional[str] = None
+    preferred_time: Optional[str] = None
+    topic: Optional[str] = None
     status: Literal["pending", "confirmed", "cancelled"] = "pending"
 
 
@@ -35,13 +32,15 @@ class EventInfo(BaseModel):
 
 
 class GraphState(BaseModel):
-    messages: List[Message] = Field(default_factory=list)
+    messages: Annotated[List[BaseMessage], add_messages] = Field(default_factory=list)
+
     intent: Optional[str] = None
 
     booking: Optional[Booking] = None
     notes: Optional[SessionNotes] = None
     feedback: Optional[Feedback] = None
     event: Optional[EventInfo] = None
+
     user_id: Optional[str] = None
     conversation_id: Optional[str] = None
 

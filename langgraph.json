@@ -4,6 +4,6 @@
   },
   "environment": ".env",
   "dependencies": [
-    "."
+    "backend"
   ]
 }

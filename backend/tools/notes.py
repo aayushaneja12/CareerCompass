@@ -1,4 +1,3 @@
-# tools/notes.py
 import re
 from datetime import datetime
 from backend.supabase_client import supabase

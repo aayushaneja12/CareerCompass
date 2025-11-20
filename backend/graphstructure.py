@@ -1,30 +1,33 @@
 from langgraph.graph import StateGraph, END
 from .state import GraphState
+
+# Intent classifier
 from .intent import classify_intent_node
 
 # Tool nodes
 from .tools.faq import faq_node
 from .tools.bookings import booking_node
 from .tools.notes import notes_node
-from .tools.feedback import feedback_node
+from .tools.follow_up_advice import feedback_node
 from .tools.events import event_info_node
 from .tools.kb_search import kb_search_node
 from .tools.profile import profile_node
 from .tools.coach_availability import coach_availability_node
 from .tools.fallback import fallback_node
 from .tools.conversationlog import conversation_log_node
+from .tools.conversation_title import conversation_title_node
 
-# New LLM response node
+# LLM Response pipeline
 from .tools.respond import response_node
-
-# OPTIONAL:
-from .tools.rewrite import rewrite_node  # currently disabled or empty
+from .tools.rewrite import rewrite_node
 
 
 def build_graph():
     workflow = StateGraph(GraphState)
 
-    # 1. Add nodes
+    # -----------------------------------------
+    # 1) Register ALL nodes
+    # -----------------------------------------
     workflow.add_node("classify_intent", classify_intent_node)
 
     workflow.add_node("faq_node", faq_node)
@@ -39,15 +42,22 @@ def build_graph():
 
     workflow.add_node("response_node", response_node)
     workflow.add_node("rewrite_node", rewrite_node)
-    workflow.add_node("conversation_log_node", conversation_log_node)
 
-    # 2. Entry
+    workflow.add_node("conversation_log_node", conversation_log_node)
+    workflow.add_node("conversation_title_node", conversation_title_node)
+
+    # -----------------------------------------
+    # 2) Entry point
+    # -----------------------------------------
     workflow.set_entry_point("classify_intent")
 
-    # 3. Routing
+    # -----------------------------------------
+    # 3) Intent routing
+    # -----------------------------------------
     def router(state: GraphState) -> str:
         if state.intent is None:
             return "fallback_node"
+
         return {
             "faq": "faq_node",
             "booking": "booking_node",
@@ -72,10 +82,12 @@ def build_graph():
             "profile_node": "profile_node",
             "coach_availability_node": "coach_availability_node",
             "fallback_node": "fallback_node",
-        },
+        }
     )
 
-    # 4. Tool → response → rewrite → log
+    # -----------------------------------------
+    # 4) All tool nodes → response
+    # -----------------------------------------
     main_tool_nodes = [
         "faq_node",
         "booking_node",
@@ -91,8 +103,14 @@ def build_graph():
     for node in main_tool_nodes:
         workflow.add_edge(node, "response_node")
 
+    # -----------------------------------------
+    # 5) Rewrite → Log → Title → END
+    # -----------------------------------------
     workflow.add_edge("response_node", "rewrite_node")
     workflow.add_edge("rewrite_node", "conversation_log_node")
-    workflow.add_edge("conversation_log_node", END)
+
+    workflow.add_edge("conversation_log_node", "conversation_title_node")
+    workflow.add_edge("conversation_title_node", END)
 
     return workflow.compile()
+
