@@ -1,5 +1,7 @@
 # ---- Environment & Secrets ----
 .env
+frontend/.env.local
+backend/.env
 *.key
 *.pem
 

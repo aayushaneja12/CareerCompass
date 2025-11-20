@@ -258,10 +258,10 @@ const Index = () => {
               </Button>
               <div>
                 <h1 className="text-xl font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
-                  PRP AI Agent 🤖
+                  Mentra- PRP AI Agent 🤖
                 </h1>
                 <p className="text-sm text-[hsl(var(--muted-foreground))]">
-                  Your Interactive Mentor
+                  Your AI Haven for Your Career Elevation
                 </p>
               </div>
             </div>
@@ -286,7 +286,7 @@ const Index = () => {
             </div>
           </div>
           <p className="text-xs text-[hsl(var(--muted-foreground))] mt-2 italic">
-            "Ask anything about PRP — from badges to events, I'm here to help!"
+            "I’m here to make your PRP journey easier, one question at a time."
           </p>
         </header>
 
@@ -302,19 +302,20 @@ const Index = () => {
                       <span className="text-4xl">🤖</span>
                     </div>
                     <h2 className="text-3xl font-bold text-[hsl(var(--foreground))] mb-4 text-glow">
-                      Welcome to PRP AI Agent
+                      Welcome to Mentra- PRP AI Agent
                     </h2>
                     <p className="text-[hsl(var(--muted-foreground))] mb-8 text-lg">
                       Ready to track your PRP progress today? I can help you with:
                     </p>
                     <div className="grid grid-cols-2 gap-4 text-left">
                       {[
-                        "📚 PRP Documentation & FAQs",
-                        "📊 Track Your Attendance",
-                        "📅 Upcoming Events & Sessions",
-                        "✅ Quiz Schedules & Results",
-                        "🏆 Badge Progress & Achievements",
-                        "📈 Overall Progress Dashboard",
+                        "📖 Learn About PRP",
+                        "📊 Check My Attendance",
+                        "📅 What’s Coming Up?",
+                        "📝 My Quizzes & Results",
+                        "🏆 My Badge Progress",
+                        "📈 My PRP Overview",
+                        "🤝 Mentor Me, Mentra",
                       ].map((item, index) => (
                         <div
                           key={index}
