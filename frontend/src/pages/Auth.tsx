@@ -95,7 +95,7 @@ const Auth = () => {
                 <CardHeader className="space-y-2">
                     <div className="flex justify-center mb-4">
                         <div className="w-16 h-16 rounded-full bg-[hsl(var(--primary))] flex items-center justify-center gold-glow">
-                            <span className="text-3xl">🤖</span>
+                            <span className="text-3xl">🧠</span>
                         </div>
                     </div>
                     <CardTitle className="text-2xl text-center text-[hsl(var(--foreground))]">

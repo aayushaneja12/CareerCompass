@@ -258,7 +258,7 @@ const Index = () => {
               </Button>
               <div>
                 <h1 className="text-xl font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
-                  Mentra- PRP AI Agent 🤖
+                  Mentra- PRP AI Agent 🧠
                 </h1>
                 <p className="text-sm text-[hsl(var(--muted-foreground))]">
                   Your AI Haven for Your Career Elevation
@@ -299,7 +299,7 @@ const Index = () => {
                 <div className="h-full flex items-center justify-center p-6">
                   <div className="text-center max-w-2xl">
                     <div className="w-20 h-20 rounded-full bg-[hsl(var(--primary))] mx-auto mb-6 flex items-center justify-center gold-glow animate-pulse">
-                      <span className="text-4xl">🤖</span>
+                      <span className="text-4xl">🧠</span>
                     </div>
                     <h2 className="text-3xl font-bold text-[hsl(var(--foreground))] mb-4 text-glow">
                       Welcome to Mentra- PRP AI Agent
