@@ -1,53 +1,38 @@
+from datetime import datetime
 from backend.supabase_client import supabase
 from backend.state import GraphState
-
 
 MAX_TITLE_LEN = 80
 
 
 def _pick_seed_text(state: GraphState) -> str:
-    """
-    Pick the most reasonable text to base the title on.
-    Prefer the first user message; fall back to latest.
-    """
+    """Pick first user message if possible, else last message."""
     if not state.messages:
         return ""
 
-    # try first user message
     for msg in state.messages:
-        sender = getattr(msg, "sender", getattr(msg, "role", "user"))
-        if sender == "user":
+        sender = getattr(msg, "type", "")
+        if sender == "human":
             return msg.content or ""
 
-    # fallback: last message content
     return state.messages[-1].content or ""
 
 
 def _generate_title(text: str) -> str:
-    """
-    Simple heuristic title generator:
-    - take first sentence or line
-    - trim length
-    - make it title-like
-    """
+    """Create a clean, short title."""
     if not text:
         return "PRP Conversation"
 
-    # strip and collapse whitespace
     raw = " ".join(text.strip().split())
 
-    # cut at first strong boundary (. ? ! or newline)
     for sep in [".", "?", "!", "\n"]:
         if sep in raw:
             raw = raw.split(sep)[0]
             break
 
-    # hard length cap
     if len(raw) > MAX_TITLE_LEN:
-        raw = raw[:MAX_TITLE_LEN - 1].rstrip() + "…"
+        raw = raw[: MAX_TITLE_LEN - 1].rstrip() + "…"
 
-    # basic normalisation
-    # e.g. "help with my cv and interviews" -> "Help with my CV and interviews"
     if raw:
         raw = raw[0].upper() + raw[1:]
 
@@ -56,16 +41,13 @@ def _generate_title(text: str) -> str:
 
 def conversation_title_node(state: GraphState) -> GraphState:
     """
-    Automatically sets a short title for the conversation
-    in the `conversations` table, if it doesn't have one yet.
+    Writes conversation title to Supabase *only if* not yet set.
     """
-
     conv_id = getattr(state, "conversation_id", None)
     if not conv_id:
-        # no persisted conversation yet
         return state
 
-    # Check if conversation already has a title
+    # Fetch existing conversation
     resp = (
         supabase.table("conversations")
         .select("id, title")
@@ -76,24 +58,20 @@ def conversation_title_node(state: GraphState) -> GraphState:
 
     row = resp.data
     if not row:
-        # conversation doesn't exist (shouldn't happen, but be safe)
         return state
 
     existing_title = (row.get("title") or "").strip()
     if existing_title:
-        # already titled, do nothing
-        return state
+        return state  # already titled
 
-    # Generate title based on conversation content
-    seed_text = _pick_seed_text(state)
-    title = _generate_title(seed_text)
+    # Generate title
+    seed = _pick_seed_text(state)
+    title = _generate_title(seed)
 
-    # Persist title
-    supabase.table("conversations").update(
-        {"title": title}
-    ).eq("id", conv_id).execute()
+    # Write to DB
+    supabase.table("conversations").update({"title": title}).eq("id", conv_id).execute()
 
-    # Optional: attach to state for downstream use
+    # Save on state
     state.conversation_title = title
 
     return state
