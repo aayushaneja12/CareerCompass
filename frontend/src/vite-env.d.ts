@@ -1,5 +1,11 @@
-import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
-import "./index.css";
+/// <reference types="vite/client" />
 
-createRoot(document.getElementById("root")!).render(<App />);
+interface ImportMetaEnv {
+    readonly VITE_SUPABASE_URL: string;
+    readonly VITE_SUPABASE_ANON_KEY: string;
+  }
+  
+  interface ImportMeta {
+    readonly env: ImportMetaEnv;
+  }
+  

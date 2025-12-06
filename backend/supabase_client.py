@@ -1,6 +1,6 @@
 import os
 from supabase import create_client, Client
-from dotenv import load_dotenv 
+from dotenv import load_dotenv
 
 # Load .env from the project root
 load_dotenv()
