@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { fetchEvents } from "@/integrations/supabase/events";
+
 
 interface Message {
   id: string;
@@ -33,6 +35,15 @@ const Index = () => {
   const [showWidgets, setShowWidgets] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  // 🔹 TEMP: Supabase events test
+  const [events, setEvents] = useState<any[]>([]);
+  const [eventsError, setEventsError] = useState<string>("");
+
+  useEffect(() => {
+    fetchEvents()
+      .then(setEvents)
+      .catch((e) => setEventsError(e.message));
+  }, []);
 
   // Load conversations on mount
   useEffect(() => {
@@ -237,7 +248,10 @@ const Index = () => {
       <Sidebar
         isCollapsed={isSidebarCollapsed}
         onNewChat={createNewChat}
-        chatHistory={conversations.map(conv => ({ id: conv.id, title: conv.title }))}
+        chatHistory={conversations.map((conv) => ({
+          id: conv.id,
+          title: conv.title,
+        }))}
         onSelectChat={selectChat}
         currentChatId={currentConversationId || ""}
       />
@@ -254,7 +268,11 @@ const Index = () => {
                 onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                 className="hover:bg-[hsl(var(--accent))] transition-smooth"
               >
-                {isSidebarCollapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />}
+                {isSidebarCollapsed ? (
+                  <Menu className="w-5 h-5" />
+                ) : (
+                  <X className="w-5 h-5" />
+                )}
               </Button>
               <div>
                 <h1 className="text-xl font-bold text-[hsl(var(--foreground))] flex items-center gap-2">
@@ -305,7 +323,8 @@ const Index = () => {
                       Welcome to Mentra- PRP AI Agent
                     </h2>
                     <p className="text-[hsl(var(--muted-foreground))] mb-8 text-lg">
-                      Ready to track your PRP progress today? I can help you with:
+                      Ready to track your PRP progress today? I can help you
+                      with:
                     </p>
                     <div className="grid grid-cols-2 gap-4 text-left">
                       {[
@@ -324,9 +343,25 @@ const Index = () => {
                             "hover:border-[hsl(var(--primary))] hover:gold-glow transition-smooth cursor-default"
                           )}
                         >
-                          <p className="text-sm text-[hsl(var(--foreground))]">{item}</p>
+                          <p className="text-sm text-[hsl(var(--foreground))]">
+                            {item}
+                          </p>
                         </div>
                       ))}
+                    </div>
+                    {/* 🔹 TEMP: Supabase Events Debug */}
+                    <div className="mt-6 text-left">
+                      <h3 className="text-sm font-semibold mb-2">
+                        Supabase Events Test
+                      </h3>
+
+                      {eventsError && (
+                        <p className="text-xs text-red-500">{eventsError}</p>
+                      )}
+
+                      <pre className="text-xs bg-muted p-2 rounded max-h-40 overflow-auto">
+                        {JSON.stringify(events, null, 2)}
+                      </pre>
                     </div>
                     <Button
                       onClick={() => handleSendMessage("Hello!")}
@@ -343,7 +378,11 @@ const Index = () => {
               ) : (
                 <div className="py-4">
                   {messages.map((message) => (
-                    <ChatMessage key={message.id} role={message.role} content={message.content} />
+                    <ChatMessage
+                      key={message.id}
+                      role={message.role}
+                      content={message.content}
+                    />
                   ))}
                   <div ref={messagesEndRef} />
                 </div>
