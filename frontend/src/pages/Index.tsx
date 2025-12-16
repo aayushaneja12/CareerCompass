@@ -38,6 +38,16 @@ const Index = () => {
   // 🔹 TEMP: Supabase events test
   const [events, setEvents] = useState<any[]>([]);
   const [eventsError, setEventsError] = useState<string>("");
+  const quickActions = [
+    { label: "📖 Learn About PRP", action: () => handleSendMessage("Tell me about PRP") },
+    { label: "📊 Check My Attendance", action: () => navigate("/attendance") },
+    { label: "📅 What’s Coming Up?", action: () => navigate("/events") },
+    { label: "📝 My Quizzes & Results", action: () => navigate("/quizzes") },
+    { label: "🏆 My Badge Progress", action: () => navigate("/progress") },
+    { label: "📈 My PRP Overview", action: () => navigate("/progress") },
+    { label: "🤝 Mentor Me, Mentra", action: () => handleSendMessage("Mentor me") },
+  ];
+
 
   useEffect(() => {
     fetchEvents()
@@ -327,41 +337,20 @@ const Index = () => {
                       with:
                     </p>
                     <div className="grid grid-cols-2 gap-4 text-left">
-                      {[
-                        "📖 Learn About PRP",
-                        "📊 Check My Attendance",
-                        "📅 What’s Coming Up?",
-                        "📝 My Quizzes & Results",
-                        "🏆 My Badge Progress",
-                        "📈 My PRP Overview",
-                        "🤝 Mentor Me, Mentra",
-                      ].map((item, index) => (
+                      {quickActions.map((item, index) => (
                         <div
                           key={index}
+                          onClick={item.action}
                           className={cn(
                             "p-4 rounded-lg bg-[hsl(var(--card))] border border-[hsl(var(--border))]",
-                            "hover:border-[hsl(var(--primary))] hover:gold-glow transition-smooth cursor-default"
+                            "hover:border-[hsl(var(--primary))] hover:gold-glow transition-smooth cursor-pointer"
                           )}
                         >
                           <p className="text-sm text-[hsl(var(--foreground))]">
-                            {item}
+                            {item.label}
                           </p>
                         </div>
                       ))}
-                    </div>
-                    {/* 🔹 TEMP: Supabase Events Debug */}
-                    <div className="mt-6 text-left">
-                      <h3 className="text-sm font-semibold mb-2">
-                        Supabase Events Test
-                      </h3>
-
-                      {eventsError && (
-                        <p className="text-xs text-red-500">{eventsError}</p>
-                      )}
-
-                      <pre className="text-xs bg-muted p-2 rounded max-h-40 overflow-auto">
-                        {JSON.stringify(events, null, 2)}
-                      </pre>
                     </div>
                     <Button
                       onClick={() => handleSendMessage("Hello!")}
