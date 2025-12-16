@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Calendar, Clock, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import BackToHomeButton from "../components/BackToHomeButton";
 
 type EventRow = {
   id: string;
@@ -70,6 +71,7 @@ const Events = () => {
                 Workshops, networking, PRP sessions, and what’s next.
               </p>
             </div>
+            <BackToHomeButton />
           </div>
         </div>
 

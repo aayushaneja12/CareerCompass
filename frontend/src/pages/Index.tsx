@@ -44,7 +44,6 @@ const Index = () => {
     { label: "📅 What’s Coming Up?", action: () => navigate("/events") },
     { label: "📝 My Quizzes & Results", action: () => navigate("/quizzes") },
     { label: "🏆 My Badge Progress", action: () => navigate("/progress") },
-    { label: "📈 My PRP Overview", action: () => navigate("/progress") },
     { label: "🤝 Mentor Me, Mentra", action: () => handleSendMessage("Mentor me") },
   ];
 
@@ -209,24 +208,41 @@ const Index = () => {
 
       if (userMsgError) throw userMsgError;
 
-      // Simulate AI response
-      setTimeout(async () => {
-        const aiMessage = {
-          conversation_id: conversationId,
-          sender_id: null,
-          sender_type: "assistant",
-          content:
-            "Hello! I'm the PRP AI Agent. I'm here to help you with all your Professional Readiness Program questions. You can ask me about badges, events, attendance, quizzes, and track your progress. How can I assist you today?",
-        };
+            // ✅ Real AI response from backend
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
 
-        const { error: aiMsgError } = await supabase.from("messages").insert(aiMessage);
+      const res = await fetch("http://localhost:8000/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          message: content,
+          conversation_id: conversationId, // optional, but nice to send
+        }),
+      });
 
-        if (aiMsgError) {
-          console.error("Error inserting AI message:", aiMsgError);
-        }
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText || "Chat API failed");
+      }
 
-        setIsLoading(false);
-      }, 1000);
+      const json = await res.json();
+
+      const aiMessage = {
+        conversation_id: conversationId,
+        sender_id: null,
+        sender_type: "assistant",
+        content: json.reply ?? "Sorry — I couldn’t generate a reply.",
+      };
+
+      const { error: aiMsgError } = await supabase.from("messages").insert(aiMessage);
+      if (aiMsgError) throw aiMsgError;
+
+      setIsLoading(false);
+
     } catch (error: any) {
       console.error("Error sending message:", error);
       toast({

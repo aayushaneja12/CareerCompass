@@ -9,6 +9,8 @@ import Auth from "./pages/Auth";
 import Attendance from "./pages/Attendance";
 
 import Events from "./pages/Events";
+import Faq from "./pages/Faq";
+
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -46,7 +48,14 @@ const App = () => (
               </ProtectedRoute>
             }
           />
-
+          <Route
+            path="/faq"
+            element={
+              <ProtectedRoute>
+                <Faq />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/about"
             element={
