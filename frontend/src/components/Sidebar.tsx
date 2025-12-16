@@ -25,12 +25,13 @@ const Sidebar = ({ isCollapsed, onNewChat, chatHistory = [], onSelectChat, curre
   ];
 
   const services = [
-    "FAQ",
-    "Attendance",
-    "Events",
-    "Quizzes",
-    "Progress",
-  ];
+  { label: "FAQ", path: "/faq" },
+  { label: "Attendance", path: "/attendance" },
+  { label: "Events", path: "/events" },
+  { label: "Quizzes", path: "/quizzes" },
+  { label: "Progress", path: "/progress" },
+];
+
 
   return (
     <aside
@@ -73,7 +74,8 @@ const Sidebar = ({ isCollapsed, onNewChat, chatHistory = [], onSelectChat, curre
                 }}
                 className={cn(
                   "w-full flex items-center gap-3 px-4 py-3 transition-smooth hover:bg-[hsl(var(--sidebar-accent))]",
-                  isActive && "bg-[hsl(var(--sidebar-accent))] border-l-4 border-[hsl(var(--sidebar-primary))]"
+                  isActive &&
+                    "bg-[hsl(var(--sidebar-accent))] border-l-4 border-[hsl(var(--sidebar-primary))]"
                 )}
               >
                 <Icon
@@ -89,7 +91,8 @@ const Sidebar = ({ isCollapsed, onNewChat, chatHistory = [], onSelectChat, curre
                     <span
                       className={cn(
                         "flex-1 text-left font-medium transition-smooth",
-                        isActive && "text-[hsl(var(--sidebar-accent-foreground))]"
+                        isActive &&
+                          "text-[hsl(var(--sidebar-accent-foreground))]"
                       )}
                     >
                       {tab.label}
@@ -135,15 +138,20 @@ const Sidebar = ({ isCollapsed, onNewChat, chatHistory = [], onSelectChat, curre
                 <div className="bg-[hsl(var(--card))] border-l-2 border-[hsl(var(--sidebar-primary))] ml-4">
                   {services.map((service) => (
                     <button
-                      key={service}
-                      className="w-full text-left px-6 py-2 text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--sidebar-accent-foreground))] hover:bg-[hsl(var(--sidebar-accent))] transition-smooth"
+                      key={service.path}
+                      onClick={() => navigate(service.path)}
+                      className={cn(
+                        "w-full text-left px-6 py-2 text-sm transition-smooth",
+                        location.pathname === service.path
+                          ? "bg-[hsl(var(--sidebar-accent))] text-[hsl(var(--sidebar-accent-foreground))]"
+                          : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--sidebar-accent-foreground))] hover:bg-[hsl(var(--sidebar-accent))]"
+                      )}
                     >
-                      {service}
+                      {service.label}
                     </button>
                   ))}
                 </div>
               )}
-
 
               {/* About section */}
               {tab.id === "about" && isExpanded && !isCollapsed && (
@@ -152,7 +160,8 @@ const Sidebar = ({ isCollapsed, onNewChat, chatHistory = [], onSelectChat, curre
                     PRP AI Agent MVP
                   </p>
                   <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                    An intelligent assistant for the Professional Readiness Program
+                    An intelligent assistant for the Professional Readiness
+                    Program
                   </p>
                 </div>
               )}
