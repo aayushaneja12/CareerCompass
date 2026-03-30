@@ -19,10 +19,16 @@ INTENT_PATTERNS: Dict[str, List[str]] = {
     # Skill gap analysis
     "skill_gap": [
         r"skill gap",
+        r"skills gap",
+        r"missing skills",
         r"what skills do i need",
+        r"what skills .* need",
         r"skills for.*role",
+        r"compare my skills",
         r"ready for.*role",
         r"gap analysis",
+        r"analy[sz]e.*gap",
+        r"gap between",
         r"what am i missing",
         r"improve for.*role",
     ],
@@ -30,9 +36,15 @@ INTENT_PATTERNS: Dict[str, List[str]] = {
     # Career roadmap
     "roadmap": [
         r"\broadmap\b",
+        r"career path",
+        r"career paths",
         r"career.*plan",
+        r"learning plan",
+        r"study plan",
         r"path to.*role",
         r"how do i become",
+        r"steps should i take",
+        r"transition from",
         r"progression.*plan",
     ],
 
@@ -158,13 +170,51 @@ def classify_intent_node(state: GraphState) -> GraphState:
         state.last_reply = "Say something to get started."
         return state
 
-    text = state.messages[-1].content.lower()
+    # Prefer the latest user message in case assistant messages are present.
+    text = ""
+    for msg in reversed(state.messages):
+        if getattr(msg, "type", "") == "human":
+            text = str(getattr(msg, "content", "") or "")
+            break
+    if not text:
+        text = str(getattr(state.messages[-1], "content", "") or "")
+
+    text = text.lower().strip()
+    normalized_text = re.sub(r"\s+", " ", text)
 
     for intent, patterns in INTENT_PATTERNS.items():
         for pattern in patterns:
-            if re.search(pattern, text):
+            if re.search(pattern, normalized_text):
                 state.intent = intent
                 return state
+
+    # Fallback keyword scoring for natural language prompts that do not fit regexes.
+    keyword_hints: Dict[str, List[str]] = {
+        "skill_gap": ["missing skill", "skill requirement", "skill requirements", "gap"],
+        "roadmap": ["career path", "plan", "timeline", "transition", "become", "steps"],
+        "projects": ["project", "portfolio"],
+        "resume": ["resume", "cv", "ats"],
+        "progress": ["progress", "weekly", "goal", "accomplishment"],
+        "mentor_mode": ["mentor", "coaching advice", "guide me"],
+        "profile": ["my profile", "my details", "who am i"],
+        "booking": ["book", "schedule", "coaching session"],
+        "availability": ["available slots", "availability", "free times"],
+        "events": ["event", "workshop"],
+        "kb_search": ["resources", "materials", "guide", "where can i read more"],
+        "faq": ["how do i", "what is", "interview", "linkedin", "prp"],
+    }
+
+    best_intent = None
+    best_score = 0
+    for intent, hints in keyword_hints.items():
+        score = sum(1 for hint in hints if hint in normalized_text)
+        if score > best_score:
+            best_score = score
+            best_intent = intent
+
+    if best_intent and best_score > 0:
+        state.intent = best_intent
+        return state
 
     # No pattern matched
     state.intent = None

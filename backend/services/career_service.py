@@ -23,11 +23,160 @@ llm = ChatGroq(model="llama-3.3-70b-versatile", groq_api_key=GROQ_API_KEY)
 
 class CareerService:
     @staticmethod
+    def _normalize_string_list(value: Any) -> List[str]:
+        if value is None:
+            return []
+        if isinstance(value, list):
+            return [str(item).strip() for item in value if str(item).strip()]
+        if isinstance(value, str):
+            text = value.strip()
+            return [text] if text else []
+        return []
+
+    @staticmethod
+    def _normalize_gap_items(value: Any, importance: str) -> List[Dict[str, Any]]:
+        """Accept list[str] or list[dict] and normalize to SkillGap-like dictionaries."""
+        normalized: List[Dict[str, Any]] = []
+        if not isinstance(value, list):
+            return normalized
+
+        for item in value:
+            if isinstance(item, dict):
+                skill = str(item.get("skill") or item.get("name") or "").strip()
+                if not skill:
+                    continue
+                normalized.append({
+                    "skill": skill,
+                    "importance": str(item.get("importance") or importance),
+                    "current_level": str(item.get("current_level") or "none"),
+                    "target_level": str(item.get("target_level") or "intermediate"),
+                    "suggested_path": item.get("suggested_path"),
+                })
+                continue
+
+            skill_text = str(item).strip()
+            if not skill_text:
+                continue
+            normalized.append({
+                "skill": skill_text,
+                "importance": importance,
+                "current_level": "none",
+                "target_level": "intermediate",
+                "suggested_path": None,
+            })
+
+        return normalized
+
+    @staticmethod
+    def _parse_json_object(content: Any) -> Optional[Dict[str, Any]]:
+        """Best-effort parse for model outputs that may include markdown fences or extra text."""
+        if content is None:
+            return None
+
+        text = content if isinstance(content, str) else str(content)
+        text = text.strip()
+        if not text:
+            return None
+
+        # Fast path: already valid JSON object
+        try:
+            parsed = json.loads(text)
+            return parsed if isinstance(parsed, dict) else None
+        except json.JSONDecodeError:
+            pass
+
+        # Handle fenced markdown blocks like ```json ... ```
+        if "```" in text:
+            chunks = text.split("```")
+            for chunk in chunks:
+                candidate = chunk.strip()
+                if candidate.lower().startswith("json"):
+                    candidate = candidate[4:].strip()
+                if not candidate:
+                    continue
+                try:
+                    parsed = json.loads(candidate)
+                    if isinstance(parsed, dict):
+                        return parsed
+                except json.JSONDecodeError:
+                    continue
+
+        # Extract the first top-level JSON object from mixed text.
+        start = text.find("{")
+        end = text.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            candidate = text[start:end + 1]
+            try:
+                parsed = json.loads(candidate)
+                return parsed if isinstance(parsed, dict) else None
+            except json.JSONDecodeError:
+                return None
+
+        return None
+
+    @staticmethod
     def _roadmap_db_to_model(row: Dict[str, Any]) -> Dict[str, Any]:
         normalized = dict(row or {})
         if "current_role" not in normalized and "current_position" in normalized:
             normalized["current_role"] = normalized.get("current_position")
         return normalized
+
+    @staticmethod
+    def _normalize_roadmap_data(value: Any, target_role: str) -> Dict[str, Any]:
+        if not isinstance(value, dict):
+            return {
+                "title": f"Path to {target_role}",
+                "overview": "A structured career progression plan",
+                "phases": [],
+            }
+
+        title = str(value.get("title") or f"Path to {target_role}").strip()
+        overview = str(value.get("overview") or "A structured career progression plan").strip()
+
+        raw_phases = value.get("phases")
+        if not isinstance(raw_phases, list):
+            raw_phases = []
+
+        normalized_phases: List[Dict[str, Any]] = []
+        for idx, phase in enumerate(raw_phases, start=1):
+            if isinstance(phase, str):
+                normalized_phases.append(
+                    {
+                        "phase_number": idx,
+                        "phase_name": phase.strip() or f"Phase {idx}",
+                        "goals": [],
+                        "duration": "4 weeks",
+                        "tasks": [],
+                    }
+                )
+                continue
+
+            if not isinstance(phase, dict):
+                continue
+
+            tasks = phase.get("tasks")
+            if not isinstance(tasks, list):
+                tasks = phase.get("steps") if isinstance(phase.get("steps"), list) else []
+
+            goals = phase.get("goals")
+            if not isinstance(goals, list):
+                goals = []
+
+            normalized_phases.append(
+                {
+                    "phase_number": phase.get("phase_number") if isinstance(phase.get("phase_number"), int) else idx,
+                    "phase_name": str(phase.get("phase_name") or phase.get("name") or f"Phase {idx}").strip(),
+                    "goals": [str(g).strip() for g in goals if str(g).strip()],
+                    "duration": str(phase.get("duration") or "4 weeks").strip(),
+                    "tasks": tasks,
+                }
+            )
+
+        return {
+            "title": title,
+            "overview": overview,
+            "phases": normalized_phases,
+        }
 
     @staticmethod
     async def analyze_skill_gap(
@@ -76,9 +225,8 @@ Return only valid JSON, no markdown."""
             ])
             
             # Parse LLM response
-            try:
-                analysis = json.loads(response.content)
-            except json.JSONDecodeError:
+            analysis = CareerService._parse_json_object(response.content)
+            if analysis is None:
                 # Fallback if LLM didn't return valid JSON
                 analysis = {
                     "readiness_score": 50,
@@ -92,18 +240,38 @@ Return only valid JSON, no markdown."""
                     "suggested_timeline": "3-6 months"
                 }
             
+            current_skills = CareerService._normalize_string_list(
+                analysis.get("current_skills", user_profile.skills)
+            )
+            required_skills = CareerService._normalize_string_list(
+                analysis.get("required_skills", [])
+            )
+            high_priority_gaps = CareerService._normalize_gap_items(
+                analysis.get("high_priority_gaps", []),
+                "critical",
+            )
+            medium_priority_gaps = CareerService._normalize_gap_items(
+                analysis.get("medium_priority_gaps", []),
+                "medium",
+            )
+            low_priority_gaps = CareerService._normalize_gap_items(
+                analysis.get("low_priority_gaps", []),
+                "low",
+            )
+            next_steps = CareerService._normalize_string_list(analysis.get("next_steps", []))
+
             # Save to database
             report_data = {
                 "user_id": user_profile.user_id,
                 "target_role": target_role,
                 "readiness_score": analysis.get("readiness_score", 50),
                 "readiness_text": analysis.get("readiness_text", "Intermediate"),
-                "current_skills": analysis.get("current_skills", []),
-                "required_skills": analysis.get("required_skills", []),
-                "high_priority_gaps": analysis.get("high_priority_gaps", []),
-                "medium_priority_gaps": analysis.get("medium_priority_gaps", []),
-                "low_priority_gaps": analysis.get("low_priority_gaps", []),
-                "next_steps": analysis.get("next_steps", []),
+                "current_skills": current_skills,
+                "required_skills": required_skills,
+                "high_priority_gaps": high_priority_gaps,
+                "medium_priority_gaps": medium_priority_gaps,
+                "low_priority_gaps": low_priority_gaps,
+                "next_steps": next_steps,
                 "suggested_timeline": analysis.get("suggested_timeline", ""),
                 "created_at": datetime.utcnow().isoformat(),
             }
@@ -156,14 +324,8 @@ Return only valid JSON."""
                 HumanMessage(content=prompt)
             ])
             
-            try:
-                roadmap_data = json.loads(response.content)
-            except json.JSONDecodeError:
-                roadmap_data = {
-                    "title": f"Path to {target_role}",
-                    "overview": "A structured career progression plan",
-                    "phases": []
-                }
+            parsed_roadmap = CareerService._parse_json_object(response.content)
+            roadmap_data = CareerService._normalize_roadmap_data(parsed_roadmap, target_role)
             
             # Save roadmap to database
             road_payload = {
@@ -183,14 +345,25 @@ Return only valid JSON."""
             if "phases" in roadmap_data:
                 items = []
                 for phase in roadmap_data["phases"]:
-                    for task in phase.get("tasks", []):
+                    raw_tasks = phase.get("tasks", [])
+                    if not isinstance(raw_tasks, list):
+                        raw_tasks = []
+                    for task in raw_tasks:
                         if isinstance(task, str):
                             title = task
                             description = None
                             resources = []
                         else:
-                            title = task.get("title", "")
-                            description = task.get("description")
+                            if not isinstance(task, dict):
+                                continue
+                            title = str(
+                                task.get("title")
+                                or task.get("task")
+                                or task.get("name")
+                                or task.get("action")
+                                or ""
+                            ).strip()
+                            description = task.get("description") or task.get("details")
                             resources = task.get("resources") if isinstance(task.get("resources"), list) else []
 
                         if not title:

@@ -60,9 +60,14 @@ const Index = () => {
   useEffect(() => { scrollToBottom(); }, [messages]);
 
   useEffect(() => {
-    const state = location.state as { prefillMessage?: string } | null;
+    const state = location.state as { prefillMessage?: string; openConversationId?: string } | null;
+    if (state?.openConversationId) {
+      setCurrentConversationId(state.openConversationId);
+    }
     if (state?.prefillMessage) {
       handleSendMessage(state.prefillMessage);
+    }
+    if (state?.prefillMessage || state?.openConversationId) {
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);

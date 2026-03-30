@@ -1,7 +1,7 @@
 """
 Resume review service for analyzing and improving resumes.
 """
-from typing import Optional
+from typing import Optional, Any, Dict, List
 from datetime import datetime
 from langchain_groq import ChatGroq
 from langchain_core.messages import SystemMessage, HumanMessage
@@ -16,6 +16,71 @@ llm = ChatGroq(model="llama-3.3-70b-versatile", groq_api_key=GROQ_API_KEY)
 
 
 class ResumeService:
+    @staticmethod
+    def _parse_json_object(content: Any) -> Optional[Dict[str, Any]]:
+        if content is None:
+            return None
+
+        text = content if isinstance(content, str) else str(content)
+        text = text.strip()
+        if not text:
+            return None
+
+        try:
+            parsed = json.loads(text)
+            return parsed if isinstance(parsed, dict) else None
+        except json.JSONDecodeError:
+            pass
+
+        if "```" in text:
+            chunks = text.split("```")
+            for chunk in chunks:
+                candidate = chunk.strip()
+                if candidate.lower().startswith("json"):
+                    candidate = candidate[4:].strip()
+                if not candidate:
+                    continue
+                try:
+                    parsed = json.loads(candidate)
+                    if isinstance(parsed, dict):
+                        return parsed
+                except json.JSONDecodeError:
+                    continue
+
+        start = text.find("{")
+        end = text.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            candidate = text[start:end + 1]
+            try:
+                parsed = json.loads(candidate)
+                return parsed if isinstance(parsed, dict) else None
+            except json.JSONDecodeError:
+                return None
+
+        return None
+
+    @staticmethod
+    def _to_float(value: Any, default: float) -> float:
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return default
+
+    @staticmethod
+    def _normalize_string_list(value: Any) -> List[str]:
+        if value is None:
+            return []
+        if isinstance(value, list):
+            return [str(item).strip() for item in value if str(item).strip()]
+        if isinstance(value, str):
+            text = value.strip()
+            return [text] if text else []
+        return []
+
+    @staticmethod
+    def _normalize_dict(value: Any) -> Dict[str, Any]:
+        return value if isinstance(value, dict) else {}
+
     @staticmethod
     async def analyze_resume(
         user_id: str,
@@ -76,9 +141,8 @@ Return only valid JSON."""
                 HumanMessage(content=prompt)
             ])
             
-            try:
-                analysis = json.loads(response.content)
-            except json.JSONDecodeError:
+            analysis = ResumeService._parse_json_object(response.content)
+            if analysis is None:
                 analysis = {
                     "score": 50,
                     "ats_score": 50,
@@ -95,14 +159,14 @@ Return only valid JSON."""
                 "user_id": user_id,
                 "resume_text": resume_text,
                 "target_role": target_role,
-                "score": analysis.get("score", 50),
-                "ats_score": analysis.get("ats_score", 50),
-                "strengths": analysis.get("strengths", []),
-                "weaknesses": analysis.get("weaknesses", []),
-                "keyword_gaps": analysis.get("keyword_gaps", []),
+                "score": ResumeService._to_float(analysis.get("score", 50), 50),
+                "ats_score": ResumeService._to_float(analysis.get("ats_score", 50), 50),
+                "strengths": ResumeService._normalize_string_list(analysis.get("strengths", [])),
+                "weaknesses": ResumeService._normalize_string_list(analysis.get("weaknesses", [])),
+                "keyword_gaps": ResumeService._normalize_string_list(analysis.get("keyword_gaps", [])),
                 "summary_suggestions": analysis.get("summary_suggestions"),
-                "headline_suggestions": analysis.get("headline_suggestions", []),
-                "bullet_improvements": analysis.get("bullet_improvements", {}),
+                "headline_suggestions": ResumeService._normalize_string_list(analysis.get("headline_suggestions", [])),
+                "bullet_improvements": ResumeService._normalize_dict(analysis.get("bullet_improvements", {})),
                 "created_at": datetime.utcnow().isoformat(),
                 "reviewed_at": datetime.utcnow().isoformat(),
             }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Wrench, Info, Home, History, ChevronDown, Compass, Target, BarChart3, Lightbulb, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate, useLocation } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -20,20 +21,52 @@ const services = [
   { id: "progress", label: "Progress", icon: BarChart3, path: "/progress" },
 ];
 
-const Sidebar = ({ isCollapsed, onNewChat, chatHistory = [], onSelectChat, currentChatId }: SidebarProps) => {
+const Sidebar = ({ isCollapsed, onNewChat, chatHistory, onSelectChat, currentChatId }: SidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [localChatHistory, setLocalChatHistory] = useState<Array<{ id: string; title: string }>>([]);
   const isChatContext = typeof onNewChat === "function";
+  const hasExternalHistory = Array.isArray(chatHistory);
+  const effectiveChatHistory = hasExternalHistory ? chatHistory : localChatHistory;
   const [expandedSection, setExpandedSection] = useState<string | null>(() => {
     const saved = localStorage.getItem("careercompass.sidebar.expandedSection");
     if (saved === "history" || saved === "services") {
       return saved;
     }
-    if (location.pathname === "/" && isChatContext) {
-      return "history";
-    }
-    return "services";
+    return null;
   });
+
+  useEffect(() => {
+    if (hasExternalHistory) {
+      return;
+    }
+
+    const loadConversations = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setLocalChatHistory([]);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("conversations")
+        .select("id,title")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        setLocalChatHistory([]);
+        return;
+      }
+
+      setLocalChatHistory((data || []).map((row) => ({
+        id: row.id,
+        title: row.title || "Untitled chat",
+      })));
+    };
+
+    loadConversations();
+  }, [hasExternalHistory, location.pathname]);
 
   useEffect(() => {
     if (expandedSection) {
@@ -95,50 +128,57 @@ const Sidebar = ({ isCollapsed, onNewChat, chatHistory = [], onSelectChat, curre
       {/* Navigation */}
       <nav className="flex-1 py-2 overflow-y-auto px-2 space-y-0.5">
         {/* History Section (chat page only) */}
-        {isChatContext && (
-          <div>
-            <button
-              onClick={() => toggleSection("history")}
-              className={cn(
-                "w-full flex items-center gap-3 rounded-xl transition-all duration-200",
-                isCollapsed ? "p-2.5 justify-center" : "px-3 py-2.5",
-                expandedSection === "history"
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-foreground"
-              )}
-            >
-              <History className="w-4 h-4 flex-shrink-0" />
-              {!isCollapsed && (
-                <>
-                  <span className="flex-1 text-left text-sm">History</span>
-                  <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", expandedSection === "history" && "rotate-180")} />
-                </>
-              )}
-            </button>
-            {expandedSection === "history" && !isCollapsed && (
-              <div className="ml-3 mt-1 space-y-0.5 animate-in fade-in slide-in-from-top-2 duration-200">
-                {chatHistory.length === 0 ? (
-                  <p className="px-3 py-2 text-xs text-muted-foreground italic">No conversations yet</p>
-                ) : (
-                  chatHistory.map((chat) => (
-                    <button
-                      key={chat.id}
-                      onClick={() => onSelectChat?.(chat.id)}
-                      className={cn(
-                        "w-full text-left px-3 py-2 text-xs rounded-lg truncate transition-all duration-150",
-                        currentChatId === chat.id
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50"
-                      )}
-                    >
-                      {chat.title}
-                    </button>
-                  ))
-                )}
-              </div>
+        <div>
+          <button
+            onClick={() => toggleSection("history")}
+            className={cn(
+              "w-full flex items-center gap-3 rounded-xl transition-all duration-200",
+              isCollapsed ? "p-2.5 justify-center" : "px-3 py-2.5",
+              expandedSection === "history"
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-foreground"
             )}
-          </div>
-        )}
+          >
+            <History className="w-4 h-4 flex-shrink-0" />
+            {!isCollapsed && (
+              <>
+                <span className="flex-1 text-left text-sm">History</span>
+                <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", expandedSection === "history" && "rotate-180")} />
+              </>
+            )}
+          </button>
+          {expandedSection === "history" && !isCollapsed && (
+            <div className="ml-3 mt-1 space-y-0.5 animate-in fade-in slide-in-from-top-2 duration-200">
+              {effectiveChatHistory.length === 0 ? (
+                <p className="px-3 py-2 text-xs text-muted-foreground italic">No conversations yet</p>
+              ) : (
+                effectiveChatHistory.map((chat) => (
+                  <button
+                    key={chat.id}
+                    onClick={() => {
+                      if (onSelectChat) {
+                        onSelectChat(chat.id);
+                        if (location.pathname !== "/") {
+                          navigate("/");
+                        }
+                        return;
+                      }
+                      navigate("/", { state: { openConversationId: chat.id } });
+                    }}
+                    className={cn(
+                      "w-full text-left px-3 py-2 text-xs rounded-lg truncate transition-all duration-150",
+                      currentChatId === chat.id
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50"
+                    )}
+                  >
+                    {chat.title}
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Services Section */}
         <div>

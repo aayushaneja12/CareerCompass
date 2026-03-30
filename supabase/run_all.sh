@@ -1,4 +1,4 @@
-# !/bin/bash
+#!/bin/bash
 
 set -euo pipefail
 
@@ -8,7 +8,7 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 
 # Load env
 if [ -f "$ROOT_DIR/.env" ]; then
-  set -a\
+  set -a
   source "$ROOT_DIR/.env"
   set +a
 else
@@ -26,6 +26,7 @@ echo "Running schema setup against $SUPABASE_DB_URL ..."
 psql "$SUPABASE_DB_URL" -f "$SQL_DIR/schema_enums.sql"
 psql "$SUPABASE_DB_URL" -f "$SQL_DIR/core_tables.sql"
 psql "$SUPABASE_DB_URL" -f "$SQL_DIR/booking_system.sql"
+psql "$SUPABASE_DB_URL" -f "$SQL_DIR/career_copilot_schema.sql"
 psql "$SUPABASE_DB_URL" -f "$SQL_DIR/indexes.sql"
 psql "$SUPABASE_DB_URL" -f "$SQL_DIR/rls_policies.sql"
 psql "$SUPABASE_DB_URL" -f "$SQL_DIR/views.sql"
