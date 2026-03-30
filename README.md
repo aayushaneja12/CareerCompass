@@ -1,6 +1,6 @@
 # CareerCompass
 
-This project is developed as part of the **Bachelor of Data Science Capstone Project I** at **SP Jain School of Global Management**.
+This project is developed as part of the **Bachelor of Data Science Capstone Project** at **SP Jain School of Global Management**.
 
 The AI agent, named **CareerCompass**, supports the **Professional Readiness Program (PRP)** by providing students and mentors with a single platform for quick, reliable, and personalized assistance.
 
