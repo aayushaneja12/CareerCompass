@@ -1,82 +1,119 @@
-# PRP AI Agent 
+# CareerCompass
 
-This project is developed as part of the **Bachelor of Data Science Capstone Project I** at **SP Jain School of Global Management**.
+CareerCompass is an AI-powered career readiness platform built for the Professional Readiness Program (PRP) at SP Jain School of Global Management.
 
-The AI agent, named **Mentra**, supports the **Professional Readiness Program (PRP)** by providing students and mentors with a single platform for quick, reliable, and personalized assistance.
-
----
+It combines:
+- a FastAPI backend with LangGraph workflow routing
+- a React + Vite frontend with Supabase authentication
+- a Supabase PostgreSQL database for conversations and career analytics data
 
 ## Overview
 
-Students often ask similar questions about CVs, LinkedIn profiles, cover letters, interviews, immigration and work rights, and skill development. Mentors spend valuable time answering repetitive queries instead of focusing on one-on-one coaching.
+CareerCompass helps students with:
+- guided career chat support
+- profile management
+- skill gap analysis for target roles
+- personalized career roadmap generation
+- resume review and ATS-focused feedback
+- project idea generation for portfolio building
+- weekly progress tracking
 
-**Mentra** is a conversational assistant that:
-- Answers questions about professional readiness, PRP events, and mentoring.
-- Helps with career preparation topics such as CVs, LinkedIn, and interviews.
-- Redirects students to schedule one-on-one sessions with mentors when needed.
-- Automates routine administrative tasks like attendance tracking and progress summaries.
-- Connects to anonymized PRP data through a secure Supabase database.
+## Tech Stack
 
----
+- Frontend: React, TypeScript, Vite, Tailwind CSS, React Query
+- Backend: Python, FastAPI, LangGraph, LangChain
+- Database/Auth: Supabase (PostgreSQL + Auth)
+- LLM integration in services: Groq (`llama-3.3-70b-versatile`)
 
-## Folder Structure
+## Repository Structure
 
-- prp-ai-agent/
-    - backend/             # FastAPI backend and business logic
-        - main.py
-        - routes/
-        - services/
-    - frontend/            # Streamlit or React interface
-        - app.py
-        - components/
-    - supabase/            # SQL setup and database schema
-        - schema_enums.sql
-        - core_tables.sql
-        - booking_system.sql
-        - indexes.sql
-        - rls_policies.sql
-        - views.sql
-        - seed_data.sql
-    - data/                # Sample or anonymized PRP data
-        - sample_prp.csv
-    - venv/                # Python virtual environment (not committed)
-    - .env                 # Environment variables (Supabase URL, keys)
-    - requirements.txt     # Python dependencies
-    - README.md            # Project documentation
-    - .gitignore
+```text
+CareerCompass/
+|- backend/
+|  |- app.py                    # FastAPI API entrypoint
+|  |- cli.py                    # Local terminal chat runner
+|  |- graphstructure.py         # LangGraph workflow wiring
+|  |- intent.py                 # Rule-based intent classifier
+|  |- models/                   # Pydantic models
+|  |- services/                 # Profile/career/resume services
+|  |- tools/                    # Graph tool nodes
+|- frontend/
+|  |- src/
+|  |  |- pages/                 # Auth, chat, profile, skill gap, roadmap, resume, projects, progress
+|  |  |- hooks/                 # State + API hooks
+|  |  |- integrations/supabase/ # Supabase client + API wrappers
+|  |- package.json
+|- supabase/
+|  |- schema_enums.sql
+|  |- core_tables.sql
+|  |- booking_system.sql
+|  |- career_copilot_schema.sql
+|  |- indexes.sql
+|  |- rls_policies.sql
+|  |- views.sql
+|  |- seed_data.sql
+|  |- run_all.sh
+|- requirements.txt
+|- README.md
+```
 
----
+## Prerequisites
 
-## Setting Up the Project
+- Python 3.10+
+- Node.js 18+
+- npm
+- Supabase project (URL + keys)
+- Groq API key
 
-### 1. Clone the repository
+## Environment Variables
+
+Create a root `.env` file:
+
+```env
+SUPABASE_URL=https://<your-project-id>.supabase.co
+SUPABASE_ANON_KEY=<your-anon-key>
+SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
+GROQ_API_KEY=<your-groq-api-key>
+
+# Needed only if using psql script in supabase/run_all.sh
+SUPABASE_DB_URL=postgresql://postgres:<password>@<your-project-id>.supabase.co:5432/postgres?sslmode=require
+```
+
+Create `frontend/.env.local`:
+
+```env
+VITE_SUPABASE_URL=https://<your-project-id>.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=<your-supabase-anon-or-publishable-key>
+
+# Optional (defaults to http://localhost:8000)
+VITE_API_URL=http://localhost:8000
+```
+
+## Installation
+
+### 1. Clone repository
 
 ```bash
-git clone https://github.com/drheaa/mentra-prp-ai-agent
-cd mentra-prp-ai-agent
+git clone <your-repo-url>
+cd CareerCompass
 ```
 
 ### 2. Backend setup
 
-```bash
-python -m venv .venv
-```
-
 Windows PowerShell:
 
 ```powershell
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
+pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
 macOS/Linux:
 
 ```bash
+python3 -m venv .venv
 source .venv/bin/activate
-```
-
-Install Python dependencies:
-
-```bash
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
@@ -89,54 +126,28 @@ npm install
 cd ..
 ```
 
-## Environment Variables
-
-Create these files before running the app.
-
-### Root `.env` (backend)
-
-```env
-SUPABASE_URL=https://<your-project-id>.supabase.co
-SUPABASE_ANON_KEY=<your-anon-key>
-SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
-
-# Required by current LLM services
-GROQ_API_KEY=<your-groq-api-key>
-
-# Optional: only needed for running supabase/run_all.sh
-SUPABASE_DB_URL=postgresql://postgres:<password>@<your-project-id>.supabase.co:5432/postgres?sslmode=require
-```
-
-### `frontend/.env.local`
-
-```env
-VITE_SUPABASE_URL=https://<your-project-id>.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=<your-supabase-anon-or-publishable-key>
-
-# Optional (defaults to http://localhost:8000)
-VITE_API_URL=http://localhost:8000
-```
-
-## Run The Project
+## Running the Application
 
 Open two terminals from project root.
 
-### Terminal 1: backend API
+Terminal 1 (backend):
 
 ```bash
 uvicorn backend.app:app --reload --host 127.0.0.1 --port 8000
 ```
 
-### Terminal 2: frontend
+Terminal 2 (frontend):
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-Frontend will usually run on `http://localhost:5173`.
+Default URLs:
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:8000`
 
-## API Endpoints (Current)
+## Backend API Endpoints
 
 - `GET /health`
 - `POST /chat`
@@ -150,73 +161,64 @@ Frontend will usually run on `http://localhost:5173`.
 - `GET /progress`
 - `PUT /progress`
 
-Most endpoints require `Authorization: Bearer <supabase_access_token>`.
+Notes:
+- Most endpoints require `Authorization: Bearer <supabase_access_token>`.
+- The frontend obtains and forwards this token from Supabase session state.
 
-## Supabase SQL Setup
+## Frontend Routes
 
-Run SQL files in this order (via Supabase SQL editor or `psql`):
+- `/auth` (public)
+- `/` chat dashboard (protected)
+- `/profile` (protected)
+- `/skill-gap` (protected)
+- `/roadmap` (protected)
+- `/resume` (protected)
+- `/projects` (protected)
+- `/progress` (protected)
+- `/about` (protected)
+- `/service/:serviceId` (protected)
+
+## Database Setup (Supabase)
+
+Run SQL in this order from the Supabase SQL editor or `psql`:
 
 1. `schema_enums.sql`
 2. `core_tables.sql`
 3. `booking_system.sql`
-4. `indexes.sql`
-5. `rls_policies.sql`
-6. `views.sql`
-7. `seed_data.sql`
+4. `career_copilot_schema.sql`
+5. `indexes.sql`
+6. `rls_policies.sql`
+7. `views.sql`
+8. `seed_data.sql`
 
-If your environment has `psql` and `SUPABASE_DB_URL`, you can run:
+Important:
+- `career_copilot_schema.sql` creates tables used by current APIs (`user_profiles`, `roadmaps`, `roadmap_items`, `skill_gap_reports`, `resume_reviews`, `saved_projects`, `progress_metrics`).
+- `supabase/run_all.sh` includes `career_copilot_schema.sql` and applies the full schema sequence.
+
+## Optional: CLI Chat Mode
+
+For quick backend graph testing in terminal:
 
 ```bash
-cd supabase
-sudo apt install postgresql-client    # or use your platform's package manager
-chmod +x run_all.sh                   # make the script executable
-bash run_all.sh                       # run the database setup
+python -m backend.cli
 ```
 
-This creates PRP tables, views, and policies used by the AI agent.
+## Available Frontend Scripts
 
----
+Run from `frontend/`:
 
-## Features
+- `npm run dev` - start local dev server
+- `npm run build` - production build
+- `npm run build:dev` - development mode build
+- `npm run preview` - preview built app
+- `npm run lint` - run ESLint
 
-- Conversational query handling for PRP students and mentors.
-- Integration with anonymized PRP and JPT data.
-- Mentor session scheduling with Zoom link placeholders.
-- Role-based access via Supabase Row-Level Security (RLS).
-- Lightweight design using open-source tools.
+## Notes and Troubleshooting
 
----
-
-## How Mentra Works
-
-Mentra connects three main layers:
-
-1. User Interaction Layer (Frontend)
-     - Students and mentors interact via a Streamlit or React chat UI.
-
-2. AI Processing Layer (Backend)
-     - FastAPI backend uses LangChain and OpenAI APIs to interpret intent (CV advice, event info, booking requests) and interact with the database.
-
-3. Data Layer (Supabase)
-     - PRP data (events, attendance, mentoring sessions, skills, bookings) stored in a Supabase Postgres DB with RLS to ensure proper access control.
-
-Simple flow:
-- Student/Mentor → Frontend (Chat UI)
--         ↓
--      FastAPI Backend → LangChain → OpenAI API
--         ↓
--      Supabase Database (PRP Data + Bookings)
--         ↓
--   Response / Action (Answer or Schedule Session)
-
----
-
-## Tech Stack
-
-- Backend: Python, FastAPI, LangGraph, LangChain
-- Frontend: React, Vite, TypeScript, Tailwind CSS
-- Data/Auth: Supabase (PostgreSQL + Auth)
-- AI: Groq (Llama 3.3 70B), plus supporting NLP libraries in `requirements.txt`
+- If backend fails with missing Supabase credentials, check root `.env` values.
+- If frontend gets unauthorized API errors, sign out/in to refresh session token.
+- If `VITE_API_URL` is omitted, frontend defaults to `http://localhost:8000`.
+- If you see missing package errors for Groq integration, install dependencies from `requirements.txt` and ensure your environment is activated.
 
 ## Team
 
@@ -224,4 +226,3 @@ Simple flow:
 - Devanshi Rhea Aucharaz
 - Makhabat Zhyrgalbekova
 - Aayush Aneja
-
