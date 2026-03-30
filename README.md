@@ -1,8 +1,8 @@
-# PRP AI Agent (Mentra)
+# CareerCompass
 
 This project is developed as part of the **Bachelor of Data Science Capstone Project I** at **SP Jain School of Global Management**.
 
-The AI agent, named **Mentra**, supports the **Professional Readiness Program (PRP)** by providing students and mentors with a single platform for quick, reliable, and personalized assistance.
+The AI agent, named **CareerCompass**, supports the **Professional Readiness Program (PRP)** by providing students and mentors with a single platform for quick, reliable, and personalized assistance.
 
 ---
 
@@ -10,7 +10,7 @@ The AI agent, named **Mentra**, supports the **Professional Readiness Program (P
 
 Students often ask similar questions about CVs, LinkedIn profiles, cover letters, interviews, immigration and work rights, and skill development. Mentors spend valuable time answering repetitive queries instead of focusing on one-on-one coaching.
 
-**Mentra** is a conversational assistant that:
+**CareerCompass** is a conversational assistant that:
 - Answers questions about professional readiness, PRP events, and mentoring.
 - Helps with career preparation topics such as CVs, LinkedIn, and interviews.
 - Redirects students to schedule one-on-one sessions with mentors when needed.
@@ -52,8 +52,8 @@ Students often ask similar questions about CVs, LinkedIn profiles, cover letters
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/drheaa/mentra-prp-ai-agent
-cd mentra-prp-ai-agent
+git clone https://github.com/drheaa/CareerCompass-prp-ai-agent
+cd CareerCompass-prp-ai-agent
 ```
 
 ### 2. Create a virtual environment
@@ -142,9 +142,9 @@ This creates PRP tables, views, and policies used by the AI agent.
 
 ---
 
-## How Mentra Works
+## How CareerCompass Works
 
-Mentra connects three main layers:
+CareerCompass connects three main layers:
 
 1. User Interaction Layer (Frontend)
      - Students and mentors interact via a Streamlit or React chat UI.
