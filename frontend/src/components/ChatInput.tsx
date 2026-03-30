@@ -28,35 +28,42 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-t border-[hsl(var(--border))] p-4 bg-[hsl(var(--card))]">
-      <div className="flex gap-3 items-end max-w-4xl mx-auto">
-        <Textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Type your PRP question here..."
-          className={cn(
-            "min-h-[60px] max-h-[200px] resize-none",
-            "bg-[hsl(var(--input))] border-[hsl(var(--border))]",
-            "text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]",
-            "focus:ring-2 focus:ring-[hsl(var(--ring))] transition-smooth"
-          )}
-          disabled={disabled}
-        />
-        <Button
-          type="submit"
-          disabled={!message.trim() || disabled}
-          className={cn(
-            "rounded-full w-12 h-12 p-0 flex items-center justify-center",
-            "bg-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:scale-110",
-            "gold-glow transition-smooth",
-            "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-          )}
-        >
-          <Send className="w-5 h-5 text-[hsl(var(--primary-foreground))]" />
-        </Button>
-      </div>
-    </form>
+    <div className="p-4 bg-card/80 backdrop-blur-lg border-t border-border/50">
+      <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
+        <div className="flex gap-3 items-end glass-card rounded-2xl p-2">
+          <Textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Ask about career paths, skills, resumes..."
+            className={cn(
+              "min-h-[48px] max-h-[160px] resize-none border-0 bg-transparent",
+              "text-foreground placeholder:text-muted-foreground/60",
+              "focus-visible:ring-0 focus-visible:ring-offset-0",
+              "text-sm"
+            )}
+            disabled={disabled}
+          />
+          <Button
+            type="submit"
+            disabled={!message.trim() || disabled}
+            size="icon"
+            className={cn(
+              "rounded-xl w-10 h-10 flex-shrink-0",
+              "bg-primary hover:bg-primary/90 text-primary-foreground",
+              "shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30",
+              "transition-all duration-200 hover:scale-105",
+              "disabled:opacity-30 disabled:shadow-none disabled:hover:scale-100"
+            )}
+          >
+            <Send className="w-4 h-4" />
+          </Button>
+        </div>
+        <p className="text-center text-[10px] text-muted-foreground/40 mt-2">
+          Press Enter to send • Shift+Enter for new line
+        </p>
+      </form>
+    </div>
   );
 };
 

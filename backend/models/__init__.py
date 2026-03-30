@@ -1,0 +1,31 @@
+from .career_models import (
+    UserProfile,
+    Roadmap,
+    RoadmapItem,
+    SkillGapReport,
+    ResumeReview,
+    ProjectIdea,
+    ProgressMetrics,
+    ProfileUpdateRequest,
+    GenerateRoadmapRequest,
+    AnalyzeSkillGapRequest,
+    AnalyzeResumeRequest,
+    GenerateProjectsRequest,
+    SetWeeklyGoalRequest,
+)
+
+__all__ = [
+    "UserProfile",
+    "Roadmap",
+    "RoadmapItem",
+    "SkillGapReport",
+    "ResumeReview",
+    "ProjectIdea",
+    "ProgressMetrics",
+    "ProfileUpdateRequest",
+    "GenerateRoadmapRequest",
+    "AnalyzeSkillGapRequest",
+    "AnalyzeResumeRequest",
+    "GenerateProjectsRequest",
+    "SetWeeklyGoalRequest",
+]

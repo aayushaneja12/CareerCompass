@@ -1,59 +1,40 @@
-import { Calendar, CheckCircle, FileQuestion, TrendingUp } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Target, BarChart3, FileText, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Widget {
   title: string;
   value: string;
   icon: React.ReactNode;
+  color: string;
 }
 
 const InfoWidget = () => {
   const widgets: Widget[] = [
-    {
-      title: "Next Session",
-      value: "Tomorrow, 2 PM",
-      icon: <Calendar className="w-5 h-5" />,
-    },
-    {
-      title: "Attendance",
-      value: "85% Complete",
-      icon: <CheckCircle className="w-5 h-5" />,
-    },
-    {
-      title: "Upcoming Quiz",
-      value: "3 Days",
-      icon: <FileQuestion className="w-5 h-5" />,
-    },
-    {
-      title: "Progress",
-      value: "Level 4",
-      icon: <TrendingUp className="w-5 h-5" />,
-    },
+    { title: "Career Paths", value: "Explore options", icon: <Target className="w-4 h-4" />, color: "text-primary" },
+    { title: "Skill Gaps", value: "Analyze now", icon: <BarChart3 className="w-4 h-4" />, color: "text-accent" },
+    { title: "Resume Builder", value: "Tailor for JD", icon: <FileText className="w-4 h-4" />, color: "text-blue-500" },
+    { title: "Learning", value: "Get suggestions", icon: <Lightbulb className="w-4 h-4" />, color: "text-amber-500" },
   ];
 
   return (
-    <div className="space-y-4 p-4">
-      <h3 className="text-lg font-semibold text-[hsl(var(--foreground))]">Quick Access</h3>
-      <div className="space-y-3">
+    <div className="space-y-3 p-4">
+      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Quick Access</h3>
+      <div className="space-y-2">
         {widgets.map((widget, index) => (
-          <Card
+          <div
             key={index}
             className={cn(
-              "border-2 border-[hsl(var(--primary))] bg-[hsl(var(--card))]",
-              "hover:gold-glow transition-smooth cursor-pointer"
+              "glass-card rounded-xl p-3.5 hover-lift cursor-pointer group"
             )}
           >
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-[hsl(var(--muted-foreground))] flex items-center gap-2">
-                <span className="text-[hsl(var(--primary))]">{widget.icon}</span>
-                {widget.title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-lg font-bold text-[hsl(var(--foreground))]">{widget.value}</p>
-            </CardContent>
-          </Card>
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <span className={widget.color}>{widget.icon}</span>
+              <span className="text-xs text-muted-foreground">{widget.title}</span>
+            </div>
+            <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors duration-200">
+              {widget.value}
+            </p>
+          </div>
         ))}
       </div>
     </div>

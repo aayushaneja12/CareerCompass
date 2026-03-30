@@ -6,15 +6,65 @@ from .state import GraphState
 # Intent patterns
 # -------------------------------------------------------------------
 INTENT_PATTERNS: Dict[str, List[str]] = {
+    # Resume/CV Analysis (specific intent before FAQ)
+    "resume": [
+        r"review.*resume",
+        r"improve.*resume",
+        r"resume.*feedback",
+        r"review.*cv",
+        r"improve.*cv",
+        r"linkedin.*review",
+    ],
+
+    # Skill gap analysis
+    "skill_gap": [
+        r"skill gap",
+        r"what skills do i need",
+        r"skills for.*role",
+        r"ready for.*role",
+        r"gap analysis",
+        r"what am i missing",
+        r"improve for.*role",
+    ],
+
+    # Career roadmap
+    "roadmap": [
+        r"\broadmap\b",
+        r"career.*plan",
+        r"path to.*role",
+        r"how do i become",
+        r"progression.*plan",
+    ],
+
+    # Project Ideas
+    "projects": [
+        r"project.*ideas",
+        r"portfolio.*projects",
+        r"build.*project",
+    ],
+
+    # Mentor mode
+    "mentor_mode": [
+        r"mentor mode",
+        r"mentor.*on",
+    ],
+
+    # Progress tracking
+    "progress": [
+        r"my.*progress",
+        r"weekly.*goal",
+        r"track.*progress",
+    ],
+
     # FAQs about PRP, CV, LinkedIn, interviews, etc.
     "faq": [
-        r"\bcv\b",
-        r"\bresume\b",
         r"\blinkedin\b",
         r"mock interview",
         r"\bprp points?\b",
         r"how do i .*prp",
         r"help with (cv|resume|linkedin|interview)",
+        r"how to (write|improve|format).*(cv|resume)",
+        r"what is prp",
     ],
 
     # Bookings / scheduling coaching sessions
@@ -90,6 +140,7 @@ INTENT_PATTERNS: Dict[str, List[str]] = {
         r"show me slots",
         r"when can i book",
     ],
+
 }
 
 

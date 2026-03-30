@@ -17,6 +17,17 @@ from .tools.fallback import fallback_node
 from .tools.conversationlog import conversation_log_node
 from .tools.conversation_title import conversation_title_node
 
+# Career guidance tools
+from .tools.career_tools import (
+    skill_gap_node,
+    career_roadmap_node,
+    resume_analyzer_node,
+    project_generator_node,
+    profile_management_node,
+    mentor_mode_node,
+    progress_tracking_node,
+)
+
 # LLM Response pipeline
 from .tools.respond import response_node
 from .tools.rewrite import rewrite_node
@@ -39,6 +50,15 @@ def build_graph():
     workflow.add_node("profile_node", profile_node)
     workflow.add_node("coach_availability_node", coach_availability_node)
     workflow.add_node("fallback_node", fallback_node)
+
+    # Career guidance nodes
+    workflow.add_node("skill_gap_node", skill_gap_node)
+    workflow.add_node("career_roadmap_node", career_roadmap_node)
+    workflow.add_node("resume_analyzer_node", resume_analyzer_node)
+    workflow.add_node("project_generator_node", project_generator_node)
+    workflow.add_node("profile_management_node", profile_management_node)
+    workflow.add_node("mentor_mode_node", mentor_mode_node)
+    workflow.add_node("progress_tracking_node", progress_tracking_node)
 
     workflow.add_node("response_node", response_node)
     workflow.add_node("rewrite_node", rewrite_node)
@@ -67,6 +87,13 @@ def build_graph():
             "kb_search": "kb_search_node",
             "profile": "profile_node",
             "availability": "coach_availability_node",
+            # Career copilot intents
+            "skill_gap": "skill_gap_node",
+            "roadmap": "career_roadmap_node",
+            "resume": "resume_analyzer_node",
+            "projects": "project_generator_node",
+            "mentor_mode": "mentor_mode_node",
+            "progress": "progress_tracking_node",
         }.get(state.intent, "fallback_node")
 
     workflow.add_conditional_edges(
@@ -81,6 +108,13 @@ def build_graph():
             "kb_search_node": "kb_search_node",
             "profile_node": "profile_node",
             "coach_availability_node": "coach_availability_node",
+            "skill_gap_node": "skill_gap_node",
+            "career_roadmap_node": "career_roadmap_node",
+            "resume_analyzer_node": "resume_analyzer_node",
+            "project_generator_node": "project_generator_node",
+            "profile_management_node": "profile_management_node",
+            "mentor_mode_node": "mentor_mode_node",
+            "progress_tracking_node": "progress_tracking_node",
             "fallback_node": "fallback_node",
         }
     )
@@ -97,6 +131,13 @@ def build_graph():
         "kb_search_node",
         "profile_node",
         "coach_availability_node",
+        "skill_gap_node",
+        "career_roadmap_node",
+        "resume_analyzer_node",
+        "project_generator_node",
+        "profile_management_node",
+        "mentor_mode_node",
+        "progress_tracking_node",
         "fallback_node",
     ]
 

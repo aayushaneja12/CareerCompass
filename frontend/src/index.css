@@ -2,99 +2,111 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
+
   :root {
-    /* PRP Brand Colors */
-    --deep-brown: 20 17% 21%;
-    --gold: 45 100% 50%;
-    --warm-yellow: 43 71% 64%;
-    --soft-black: 0 0% 0%;
-    --ivory: 60 29% 97%;
-    
-    /* Background gradients */
-    --bg-gradient-start: 0 0% 0%;
-    --bg-gradient-end: 0 0% 18%;
-    
-    /* Semantic tokens */
-    --background: 0 0% 5%;
-    --foreground: 60 29% 97%;
+    /* Light, vibrant palette — deep blue, bright blue, purple accents */
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
 
-    --card: 20 17% 15%;
-    --card-foreground: 60 29% 97%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
 
-    --popover: 20 17% 12%;
-    --popover-foreground: 60 29% 97%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 45 100% 50%;
-    --primary-foreground: 20 17% 21%;
+    --primary: 222 64% 33%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 43 71% 64%;
-    --secondary-foreground: 20 17% 21%;
+    --secondary: 217 91% 60%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 20 17% 25%;
-    --muted-foreground: 43 30% 70%;
+    --muted: 210 20% 94%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 45 100% 50%;
-    --accent-foreground: 20 17% 21%;
+    --accent: 262 83% 58%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 60 29% 97%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 20 17% 30%;
-    --input: 20 17% 25%;
-    --ring: 45 100% 50%;
+    --border: 214 20% 90%;
+    --input: 214 20% 95%;
+    --ring: 222 64% 33%;
 
-    --radius: 0.75rem;
+    --radius: 0.875rem;
 
-    /* Sidebar specific */
-    --sidebar-background: 20 17% 21%;
-    --sidebar-foreground: 60 29% 97%;
-    --sidebar-primary: 45 100% 50%;
-    --sidebar-primary-foreground: 20 17% 21%;
-    --sidebar-accent: 20 17% 30%;
-    --sidebar-accent-foreground: 45 100% 50%;
-    --sidebar-border: 45 100% 50%;
-    --sidebar-ring: 45 100% 50%;
-    
-    /* Chat specific */
-    --user-message-bg: 43 71% 64%;
-    --user-message-text: 20 17% 21%;
-    --ai-message-bg: 0 0% 0%;
-    --ai-message-text: 45 100% 50%;
-    
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 215 16% 47%;
+    --sidebar-primary: 222 64% 33%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 91% 96%;
+    --sidebar-accent-foreground: 222 64% 33%;
+    --sidebar-border: 214 20% 92%;
+    --sidebar-ring: 222 64% 33%;
+
+    /* Chat */
+    --user-message-bg: 222 64% 33%;
+    --user-message-text: 0 0% 100%;
+    --ai-message-bg: 210 20% 96%;
+    --ai-message-text: 222 47% 11%;
+
     /* Effects */
-    --glow-color: 45 100% 50%;
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --glow-color: 217 91% 60%;
+    --gradient-warm: linear-gradient(135deg, hsl(262 83% 58%), hsl(221 83% 53%));
   }
-}
 
-@layer base {
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-  
   * {
     @apply border-border;
   }
 
   body {
-    @apply bg-gradient-to-br from-[hsl(var(--bg-gradient-start))] to-[hsl(var(--bg-gradient-end))] text-foreground;
-    font-family: 'Poppins', sans-serif;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
   }
 }
 
 @layer utilities {
   .text-glow {
-    text-shadow: 0 0 20px hsl(var(--glow-color) / 0.5);
+    text-shadow: 0 0 30px hsl(var(--glow-color) / 0.3), 0 0 60px hsl(var(--glow-color) / 0.1);
   }
-  
+
   .gold-glow {
-    box-shadow: 0 0 20px hsl(var(--glow-color) / 0.3);
+    box-shadow: 0 0 20px hsl(var(--glow-color) / 0.12), 0 0 40px hsl(var(--glow-color) / 0.04);
   }
-  
+
+  .gold-glow-strong {
+    box-shadow: 0 0 25px hsl(var(--glow-color) / 0.2), 0 0 50px hsl(var(--glow-color) / 0.08);
+  }
+
   .transition-smooth {
-    transition: var(--transition-smooth);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-card {
+    @apply bg-card/90 backdrop-blur-xl border border-border/60 shadow-sm;
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(262 83% 58%), hsl(221 83% 53%));
+  }
+
+  .gradient-border {
+    border-image: linear-gradient(135deg, hsl(262 83% 58% / 0.5), hsl(221 83% 53% / 0.2)) 1;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300;
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px hsl(var(--glow-color) / 0.12);
+  }
+
+  .shadow-elegant {
+    box-shadow: 0 1px 3px hsl(222 20% 50% / 0.06), 0 4px 12px hsl(222 20% 50% / 0.04);
   }
 }

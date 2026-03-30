@@ -265,13 +265,27 @@ llm = ChatGroq(
 
 def response_node(state: GraphState) -> GraphState:
     user = state.messages[-1].content if state.messages else ""
+    recent_turns = []
+    if state.messages:
+        for msg in state.messages[-6:]:
+            role = "User" if getattr(msg, "type", "") == "human" else "Assistant"
+            recent_turns.append(f"{role}: {msg.content}")
+    history_context = "\n".join(recent_turns)
 
     # If tool node added something to last_reply, use that
     context = state.last_reply or ""
 
     messages = [
         ("system", SYSTEM_PROMPT),
-        ("human", f"User said: {user}\n\nTool info:\n{context}\n\nWrite the final answer to the user."),
+        (
+            "human",
+            "Recent conversation:\n"
+            f"{history_context}\n\n"
+            f"User said: {user}\n\n"
+            "Tool info:\n"
+            f"{context}\n\n"
+            "Write the final answer to the user. Avoid repeating earlier phrasing verbatim; provide fresh, context-aware guidance."
+        ),
     ]
 
     try:

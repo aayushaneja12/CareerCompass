@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { FileText, Wrench, Info, ChevronRight, MessageSquarePlus, History } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Wrench, Info, Home, History, ChevronDown, Compass, Target, BarChart3, Lightbulb, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -11,172 +11,203 @@ interface SidebarProps {
   currentChatId?: string;
 }
 
+const services = [
+  { id: "profile", label: "Profile", icon: Target, path: "/profile" },
+  { id: "skill-gap", label: "Skill Gap", icon: BarChart3, path: "/skill-gap" },
+  { id: "roadmap", label: "Roadmap", icon: Lightbulb, path: "/roadmap" },
+  { id: "resume", label: "Resume", icon: FileText, path: "/resume" },
+  { id: "projects", label: "Projects", icon: Wrench, path: "/projects" },
+  { id: "progress", label: "Progress", icon: BarChart3, path: "/progress" },
+];
+
 const Sidebar = ({ isCollapsed, onNewChat, chatHistory = [], onSelectChat, currentChatId }: SidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState<string>("services");
-  const [expandedSection, setExpandedSection] = useState<string | null>("services");
+  const isChatContext = typeof onNewChat === "function";
+  const [expandedSection, setExpandedSection] = useState<string | null>(() => {
+    const saved = localStorage.getItem("careercompass.sidebar.expandedSection");
+    if (saved === "history" || saved === "services") {
+      return saved;
+    }
+    if (location.pathname === "/" && isChatContext) {
+      return "history";
+    }
+    return "services";
+  });
 
-  const tabs = [
-    { id: "new-chat", label: "New Chat", icon: MessageSquarePlus, action: onNewChat },
-    { id: "history", label: "History", icon: History },
-    { id: "services", label: "Services", icon: Wrench },
-    { id: "about", label: "About Project", icon: Info },
-  ];
+  useEffect(() => {
+    if (expandedSection) {
+      localStorage.setItem("careercompass.sidebar.expandedSection", expandedSection);
+    }
+  }, [expandedSection]);
 
-  const services = [
-  { label: "FAQ", path: "/faq" },
-  { label: "Attendance", path: "/attendance" },
-  { label: "Events", path: "/events" },
-  { label: "Quizzes", path: "/quizzes" },
-  { label: "Progress", path: "/progress" },
-];
-
+  const toggleSection = (id: string) => {
+    setExpandedSection(expandedSection === id ? null : id);
+  };
 
   return (
     <aside
       className={cn(
-        "h-screen bg-[hsl(var(--sidebar-background))] border-r-2 border-[hsl(var(--sidebar-border))] transition-smooth flex flex-col",
-        isCollapsed ? "w-16" : "w-64"
+        "h-screen bg-sidebar flex flex-col border-r border-sidebar-border transition-all duration-300 ease-in-out",
+        isCollapsed ? "w-16" : "w-72"
       )}
     >
-      {/* Header */}
-      <div className="p-4 border-b border-[hsl(var(--sidebar-border))]">
-        {!isCollapsed && (
-          <h2 className="text-[hsl(var(--sidebar-primary))] font-bold text-lg text-glow">
-            PRP AI Agent
-          </h2>
+      {/* Brand header */}
+      <div className="p-4 flex items-center gap-3">
+        {!isCollapsed ? (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-primary/12 flex items-center justify-center">
+              <Compass className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-foreground tracking-tight">CareerCompass</h2>
+              <p className="text-[10px] text-muted-foreground">Career Readiness AI</p>
+            </div>
+          </div>
+        ) : (
+          <div className="w-9 h-9 rounded-xl bg-primary/12 flex items-center justify-center mx-auto">
+            <Compass className="w-5 h-5 text-primary" />
+          </div>
         )}
       </div>
 
+      {/* Primary action */}
+      <div className="px-3 mb-2">
+        <button
+          onClick={() => {
+            onNewChat?.();
+            if (location.pathname !== "/") {
+              navigate("/");
+            }
+          }}
+          className={cn(
+            "w-full flex items-center gap-3 rounded-xl transition-all duration-200",
+            "bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20",
+            "hover:border-primary/40 hover:shadow-md hover:shadow-primary/5",
+            isCollapsed ? "p-2.5 justify-center" : "px-4 py-2.5"
+          )}
+        >
+          <Home className="w-4 h-4 flex-shrink-0" />
+          {!isCollapsed && <span className="text-sm font-medium">Home</span>}
+        </button>
+      </div>
+
       {/* Navigation */}
-      <nav className="flex-1 py-4 overflow-y-auto">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          const isExpanded = expandedSection === tab.id;
-
-          return (
-            <div key={tab.id}>
-              <button
-                onClick={() => {
-                  if (tab.id === "new-chat" && tab.action) {
-                    tab.action();
-                  } else if (tab.id === "about") {
-                    navigate("/about");
-                  } else {
-                    if (location.pathname !== "/") {
-                      navigate("/");
-                    }
-                    setActiveTab(tab.id);
-                    setExpandedSection(isExpanded ? null : tab.id);
-                  }
-                }}
-                className={cn(
-                  "w-full flex items-center gap-3 px-4 py-3 transition-smooth hover:bg-[hsl(var(--sidebar-accent))]",
-                  isActive &&
-                    "bg-[hsl(var(--sidebar-accent))] border-l-4 border-[hsl(var(--sidebar-primary))]"
-                )}
-              >
-                <Icon
-                  className={cn(
-                    "w-5 h-5 transition-smooth",
-                    isActive
-                      ? "text-[hsl(var(--sidebar-accent-foreground))]"
-                      : "text-[hsl(var(--sidebar-foreground))]"
-                  )}
-                />
-                {!isCollapsed && (
-                  <>
-                    <span
-                      className={cn(
-                        "flex-1 text-left font-medium transition-smooth",
-                        isActive &&
-                          "text-[hsl(var(--sidebar-accent-foreground))]"
-                      )}
-                    >
-                      {tab.label}
-                    </span>
-                    <ChevronRight
-                      className={cn(
-                        "w-4 h-4 transition-smooth",
-                        isExpanded && "rotate-90"
-                      )}
-                    />
-                  </>
-                )}
-              </button>
-
-              {/* Expandable section for History */}
-              {tab.id === "history" && isExpanded && !isCollapsed && (
-                <div className="bg-[hsl(var(--card))] border-l-2 border-[hsl(var(--sidebar-primary))] ml-4 max-h-64 overflow-y-auto">
-                  {chatHistory.length === 0 ? (
-                    <div className="px-6 py-2 text-sm text-[hsl(var(--muted-foreground))] italic">
-                      No chat history yet
-                    </div>
-                  ) : (
-                    chatHistory.map((chat) => (
-                      <button
-                        key={chat.id}
-                        onClick={() => onSelectChat?.(chat.id)}
-                        className={cn(
-                          "w-full text-left px-6 py-2 text-sm transition-smooth truncate",
-                          currentChatId === chat.id
-                            ? "bg-[hsl(var(--sidebar-accent))] text-[hsl(var(--sidebar-accent-foreground))]"
-                            : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--sidebar-accent-foreground))] hover:bg-[hsl(var(--sidebar-accent))]"
-                        )}
-                      >
-                        {chat.title}
-                      </button>
-                    ))
-                  )}
-                </div>
+      <nav className="flex-1 py-2 overflow-y-auto px-2 space-y-0.5">
+        {/* History Section (chat page only) */}
+        {isChatContext && (
+          <div>
+            <button
+              onClick={() => toggleSection("history")}
+              className={cn(
+                "w-full flex items-center gap-3 rounded-xl transition-all duration-200",
+                isCollapsed ? "p-2.5 justify-center" : "px-3 py-2.5",
+                expandedSection === "history"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-foreground"
               )}
-
-              {/* Expandable section for Services */}
-              {tab.id === "services" && isExpanded && !isCollapsed && (
-                <div className="bg-[hsl(var(--card))] border-l-2 border-[hsl(var(--sidebar-primary))] ml-4">
-                  {services.map((service) => (
+            >
+              <History className="w-4 h-4 flex-shrink-0" />
+              {!isCollapsed && (
+                <>
+                  <span className="flex-1 text-left text-sm">History</span>
+                  <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", expandedSection === "history" && "rotate-180")} />
+                </>
+              )}
+            </button>
+            {expandedSection === "history" && !isCollapsed && (
+              <div className="ml-3 mt-1 space-y-0.5 animate-in fade-in slide-in-from-top-2 duration-200">
+                {chatHistory.length === 0 ? (
+                  <p className="px-3 py-2 text-xs text-muted-foreground italic">No conversations yet</p>
+                ) : (
+                  chatHistory.map((chat) => (
                     <button
-                      key={service.path}
-                      onClick={() => navigate(service.path)}
+                      key={chat.id}
+                      onClick={() => onSelectChat?.(chat.id)}
                       className={cn(
-                        "w-full text-left px-6 py-2 text-sm transition-smooth",
-                        location.pathname === service.path
-                          ? "bg-[hsl(var(--sidebar-accent))] text-[hsl(var(--sidebar-accent-foreground))]"
-                          : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--sidebar-accent-foreground))] hover:bg-[hsl(var(--sidebar-accent))]"
+                        "w-full text-left px-3 py-2 text-xs rounded-lg truncate transition-all duration-150",
+                        currentChatId === chat.id
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50"
                       )}
                     >
-                      {service.label}
+                      {chat.title}
                     </button>
-                  ))}
-                </div>
-              )}
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
-              {/* About section */}
-              {tab.id === "about" && isExpanded && !isCollapsed && (
-                <div className="bg-[hsl(var(--card))] border-l-2 border-[hsl(var(--sidebar-primary))] ml-4 p-4">
-                  <p className="text-xs text-[hsl(var(--muted-foreground))] mb-2">
-                    PRP AI Agent MVP
-                  </p>
-                  <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                    An intelligent assistant for the Professional Readiness
-                    Program
-                  </p>
-                </div>
-              )}
+        {/* Services Section */}
+        <div>
+          <button
+            onClick={() => toggleSection("services")}
+            className={cn(
+              "w-full flex items-center gap-3 rounded-xl transition-all duration-200",
+              isCollapsed ? "p-2.5 justify-center" : "px-3 py-2.5",
+              expandedSection === "services"
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-foreground"
+            )}
+          >
+            <Wrench className="w-4 h-4 flex-shrink-0" />
+            {!isCollapsed && (
+              <>
+                <span className="flex-1 text-left text-sm">Services</span>
+                <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", expandedSection === "services" && "rotate-180")} />
+              </>
+            )}
+          </button>
+          {expandedSection === "services" && !isCollapsed && (
+            <div className="ml-3 mt-1 space-y-0.5 animate-in fade-in slide-in-from-top-2 duration-200">
+              {services.map((service) => {
+                const Icon = service.icon;
+                const isActive = location.pathname === service.path;
+                return (
+                  <button
+                    key={service.id}
+                    onClick={() => navigate(service.path)}
+                    className={cn(
+                      "w-full text-left px-3 py-2 text-xs rounded-lg transition-all duration-150 flex items-center gap-2",
+                      isActive
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50"
+                    )}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    {service.label}
+                  </button>
+                );
+              })}
             </div>
-          );
-        })}
+          )}
+        </div>
+
+        {/* About Project */}
+        <button
+          onClick={() => navigate("/about")}
+          className={cn(
+            "w-full flex items-center gap-3 rounded-xl transition-all duration-200",
+            isCollapsed ? "p-2.5 justify-center" : "px-3 py-2.5",
+            location.pathname === "/about"
+              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+              : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-foreground"
+          )}
+        >
+          <Info className="w-4 h-4 flex-shrink-0" />
+          {!isCollapsed && <span className="flex-1 text-left text-sm">About Project</span>}
+        </button>
       </nav>
 
-      {/* Disclaimer */}
+      {/* Footer */}
       {!isCollapsed && (
-        <div className="p-4 border-t border-[hsl(var(--sidebar-border))]">
-          <div className="flex items-start gap-2 p-3 bg-[hsl(var(--card))] rounded-lg border border-[hsl(var(--border))]">
-            <Info className="w-4 h-4 text-[hsl(var(--accent))] mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-[hsl(var(--muted-foreground))]">
-              Features may change during development
+        <div className="p-3">
+          <div className="px-3 py-2.5 rounded-xl bg-muted/50 border border-border/40">
+            <p className="text-[10px] text-muted-foreground leading-relaxed">
+              <Info className="w-3 h-3 inline mr-1 text-primary/60" />
+              SP Jain Capstone Project
             </p>
           </div>
         </div>

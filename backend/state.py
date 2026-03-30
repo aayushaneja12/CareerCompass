@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Literal, Optional, Annotated
+from typing import List, Literal, Optional, Annotated, Dict, Any
 from pydantic import BaseModel, Field
 from langgraph.graph.message import add_messages
 from langchain_core.messages import BaseMessage
@@ -42,3 +42,12 @@ class GraphState(BaseModel):
     conversation_title: Optional[str] = None 
 
     last_reply: Optional[str] = None
+
+    # Career Copilot Fields
+    current_mode: str = "chat"  # chat, mentor, skill_gap, roadmap, resume, projects, profile
+    selected_role: Optional[str] = None  # Target role for analyses
+    profile_data: Optional[Dict[str, Any]] = None  # Cached UserProfile
+    skill_gap_result: Optional[Dict[str, Any]] = None  # SkillGapReport
+    roadmap_data: Optional[Dict[str, Any]] = None  # Roadmap
+    resume_review_result: Optional[Dict[str, Any]] = None  # ResumeReview
+    projects_suggestion: Optional[List[Dict[str, Any]]] = None  # ProjectIdea list

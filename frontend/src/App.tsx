@@ -6,13 +6,15 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Auth from "./pages/Auth";
-import Attendance from "./pages/Attendance";
-
-import Events from "./pages/Events";
-import Faq from "./pages/Faq";
-
+import ServicePage from "./pages/ServicePage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Profile from "./pages/Profile";
+import SkillGap from "./pages/SkillGap";
+import CareerRoadmap from "./pages/CareerRoadmap";
+import ResumeReview from "./pages/ResumeReview";
+import Projects from "./pages/Projects";
+import Progress from "./pages/Progress";
 
 const queryClient = new QueryClient();
 
@@ -33,34 +35,66 @@ const App = () => (
             }
           />
           <Route
-            path="/events"
-            element={
-              <ProtectedRoute>
-                <Events />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/attendance"
-            element={
-              <ProtectedRoute>
-                <Attendance />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/faq"
-            element={
-              <ProtectedRoute>
-                <Faq />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/about"
             element={
               <ProtectedRoute>
                 <About />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/service/:serviceId"
+            element={
+              <ProtectedRoute>
+                <ServicePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/skill-gap"
+            element={
+              <ProtectedRoute>
+                <SkillGap />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/roadmap"
+            element={
+              <ProtectedRoute>
+                <CareerRoadmap />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/resume"
+            element={
+              <ProtectedRoute>
+                <ResumeReview />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects"
+            element={
+              <ProtectedRoute>
+                <Projects />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/progress"
+            element={
+              <ProtectedRoute>
+                <Progress />
               </ProtectedRoute>
             }
           />
