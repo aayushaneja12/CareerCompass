@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, LogOut, Compass, FileText, TrendingUp, AlertCircle, CheckCircle, Zap } from "lucide-react";
+import { LogOut, Compass, FileText, TrendingUp, AlertCircle, CheckCircle, Zap, Menu } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,7 @@ const ResumeReview = () => {
   const { resumeReview, isAnalyzingResume, error, analyzeResume, clearError } = useCareerAnalysis();
 
   const { isSidebarCollapsed, setIsSidebarCollapsed } = useSidebarState();
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [resumeText, setResumeText] = useState("");
   const [targetRole, setTargetRole] = useState("");
   const [hasAnalyzed, setHasAnalyzed] = useState(false);
@@ -108,27 +109,51 @@ const ResumeReview = () => {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background">
-      <Sidebar isCollapsed={isSidebarCollapsed} />
+    <div className="flex h-dvh md:h-screen w-full overflow-hidden bg-background">
+      <div className="hidden md:block">
+        <Sidebar isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
+      </div>
+
+      <div
+        className={cn(
+          "fixed inset-0 z-40 bg-black/40 transition-opacity duration-200 md:hidden",
+          isMobileSidebarOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        )}
+        onClick={() => setIsMobileSidebarOpen(false)}
+      />
+
+      <div
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-out md:hidden",
+          isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <Sidebar
+          isCollapsed={false}
+          onToggleCollapse={() => setIsMobileSidebarOpen(false)}
+          onNavigate={() => setIsMobileSidebarOpen(false)}
+        />
+      </div>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="border-b border-border/50 bg-card/80 backdrop-blur-lg px-5 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+        <header className="border-b border-border/50 bg-card/80 backdrop-blur-lg px-3 py-3 sm:px-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                className="hover:bg-muted rounded-xl w-9 h-9"
+                className="h-8 w-8 rounded-lg md:hidden"
+                onClick={() => setIsMobileSidebarOpen(true)}
+                aria-label="Open sidebar"
               >
-                {isSidebarCollapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
+                <Menu className="h-4 w-4" />
               </Button>
-              <div>
+              <div className="min-w-0">
                 <h1 className="text-base font-bold text-foreground flex items-center gap-2">
                   <FileText className="w-4 h-4 text-primary" />
                   Resume Review
                 </h1>
-                <p className="text-xs text-muted-foreground">Get AI-powered feedback on your resume</p>
+                <p className="text-xs text-muted-foreground truncate">Get AI-powered feedback on your resume</p>
               </div>
             </div>
             <Button
@@ -137,8 +162,8 @@ const ResumeReview = () => {
               onClick={handleLogout}
               className="hover:bg-destructive/10 hover:text-destructive rounded-xl text-xs h-8"
             >
-              <LogOut className="w-3.5 h-3.5 mr-1.5" />
-              Logout
+              <LogOut className="w-3.5 h-3.5 sm:mr-1.5" />
+              <span className="hidden sm:inline">Logout</span>
             </Button>
           </div>
         </header>

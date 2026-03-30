@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
-import { Wrench, Info, Home, History, ChevronDown, Compass, Target, BarChart3, Lightbulb, FileText } from "lucide-react";
+import { Wrench, Info, Home, History, ChevronDown, Compass, Target, BarChart3, Lightbulb, FileText, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 interface SidebarProps {
   isCollapsed: boolean;
+  onToggleCollapse?: () => void;
   onNewChat?: () => void;
   chatHistory?: Array<{ id: string; title: string }>;
   onSelectChat?: (chatId: string) => void;
   currentChatId?: string;
+  onNavigate?: () => void;
 }
 
 const services = [
@@ -21,7 +23,7 @@ const services = [
   { id: "progress", label: "Progress", icon: BarChart3, path: "/progress" },
 ];
 
-const Sidebar = ({ isCollapsed, onNewChat, chatHistory, onSelectChat, currentChatId }: SidebarProps) => {
+const Sidebar = ({ isCollapsed, onToggleCollapse, onNewChat, chatHistory, onSelectChat, currentChatId, onNavigate }: SidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [localChatHistory, setLocalChatHistory] = useState<Array<{ id: string; title: string }>>([]);
@@ -81,10 +83,23 @@ const Sidebar = ({ isCollapsed, onNewChat, chatHistory, onSelectChat, currentCha
   return (
     <aside
       className={cn(
-        "h-screen bg-sidebar flex flex-col border-r border-sidebar-border transition-all duration-300 ease-in-out",
+        "relative h-dvh md:h-screen bg-sidebar flex shrink-0 flex-col border-r border-sidebar-border transition-all duration-300 ease-in-out",
         isCollapsed ? "w-16" : "w-72"
       )}
     >
+      {onToggleCollapse && (
+        <button
+          onClick={onToggleCollapse}
+          aria-label="Toggle sidebar"
+          className={cn(
+            "absolute top-4 right-2 z-10 rounded-lg border border-border/50 bg-background/80 p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+            isCollapsed && "right-1"
+          )}
+        >
+          {isCollapsed ? <Menu className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
+        </button>
+      )}
+
       {/* Brand header */}
       <div className="p-4 flex items-center gap-3">
         {!isCollapsed ? (
@@ -112,6 +127,7 @@ const Sidebar = ({ isCollapsed, onNewChat, chatHistory, onSelectChat, currentCha
             if (location.pathname !== "/") {
               navigate("/");
             }
+            onNavigate?.();
           }}
           className={cn(
             "w-full flex items-center gap-3 rounded-xl transition-all duration-200",
@@ -161,9 +177,11 @@ const Sidebar = ({ isCollapsed, onNewChat, chatHistory, onSelectChat, currentCha
                         if (location.pathname !== "/") {
                           navigate("/");
                         }
+                        onNavigate?.();
                         return;
                       }
                       navigate("/", { state: { openConversationId: chat.id } });
+                      onNavigate?.();
                     }}
                     className={cn(
                       "w-full text-left px-3 py-2 text-xs rounded-lg truncate transition-all duration-150",
@@ -208,7 +226,10 @@ const Sidebar = ({ isCollapsed, onNewChat, chatHistory, onSelectChat, currentCha
                 return (
                   <button
                     key={service.id}
-                    onClick={() => navigate(service.path)}
+                    onClick={() => {
+                      navigate(service.path);
+                      onNavigate?.();
+                    }}
                     className={cn(
                       "w-full text-left px-3 py-2 text-xs rounded-lg transition-all duration-150 flex items-center gap-2",
                       isActive
@@ -227,7 +248,10 @@ const Sidebar = ({ isCollapsed, onNewChat, chatHistory, onSelectChat, currentCha
 
         {/* About Project */}
         <button
-          onClick={() => navigate("/about")}
+          onClick={() => {
+            navigate("/about");
+            onNavigate?.();
+          }}
           className={cn(
             "w-full flex items-center gap-3 rounded-xl transition-all duration-200",
             isCollapsed ? "p-2.5 justify-center" : "px-3 py-2.5",
@@ -244,9 +268,9 @@ const Sidebar = ({ isCollapsed, onNewChat, chatHistory, onSelectChat, currentCha
       {/* Footer */}
       {!isCollapsed && (
         <div className="p-3">
-          <div className="px-3 py-2.5 rounded-xl bg-muted/50 border border-border/40">
-            <p className="text-[10px] text-muted-foreground leading-relaxed">
-              <Info className="w-3 h-3 inline mr-1 text-primary/60" />
+          <div className="px-3 py-2.5 rounded-xl bg-primary/10 border border-border/40">
+            <p className="text-[10px] text-gray-900 leading-relaxed">
+              <Info className="w-3 h-3 inline mr-1 text-gray-800" />
               SP Jain Capstone Project
             </p>
           </div>

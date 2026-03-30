@@ -28,9 +28,9 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
   };
 
   return (
-    <div className="p-4 bg-card/80 backdrop-blur-lg border-t border-border/50">
+    <div className="p-3 sm:p-4 bg-card/80 backdrop-blur-lg border-t border-border/50">
       <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
-        <div className="flex gap-3 items-end glass-card rounded-2xl p-2">
+        <div className="flex gap-2 sm:gap-3 items-end glass-card rounded-2xl p-2">
           <Textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -59,7 +59,7 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
             <Send className="w-4 h-4" />
           </Button>
         </div>
-        <p className="text-center text-[10px] text-muted-foreground/40 mt-2">
+        <p className="hidden sm:block text-center text-[10px] text-muted-foreground/40 mt-2">
           Press Enter to send • Shift+Enter for new line
         </p>
       </form>

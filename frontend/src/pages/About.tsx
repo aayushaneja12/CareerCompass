@@ -1,13 +1,38 @@
 import { useState } from "react";
 import Sidebar from "@/components/Sidebar";
-import { Menu, Compass } from "lucide-react";
+import { Compass, Menu } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const About = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background">
-      <Sidebar isCollapsed={isSidebarCollapsed} />
+    <div className="flex h-dvh md:h-screen w-full overflow-hidden bg-background">
+      <div className="hidden md:block">
+        <Sidebar isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
+      </div>
+
+      <div
+        className={cn(
+          "fixed inset-0 z-40 bg-black/40 transition-opacity duration-200 md:hidden",
+          isMobileSidebarOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        )}
+        onClick={() => setIsMobileSidebarOpen(false)}
+      />
+
+      <div
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-out md:hidden",
+          isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <Sidebar
+          isCollapsed={false}
+          onToggleCollapse={() => setIsMobileSidebarOpen(false)}
+          onNavigate={() => setIsMobileSidebarOpen(false)}
+        />
+      </div>
 
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
@@ -15,10 +40,11 @@ const About = () => {
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <button
-                onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                className="p-2 hover:bg-muted rounded-lg transition-smooth"
+                onClick={() => setIsMobileSidebarOpen(true)}
+                className="md:hidden rounded-lg border border-border/60 bg-background/80 p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                aria-label="Open sidebar"
               >
-                <Menu className="w-5 h-5 text-muted-foreground" />
+                <Menu className="h-4 w-4" />
               </button>
               <div>
                 <h1 className="text-xl font-bold text-foreground flex items-center gap-2">

@@ -12,7 +12,7 @@ const ChatMessage = ({ role, content }: ChatMessageProps) => {
   return (
     <div
       className={cn(
-        "flex gap-3 px-6 py-3 animate-in fade-in slide-in-from-bottom-2 duration-300",
+        "flex gap-2 sm:gap-3 px-3 sm:px-6 py-3 animate-in fade-in slide-in-from-bottom-2 duration-300",
         isUser ? "justify-end" : "justify-start"
       )}
     >
@@ -24,7 +24,7 @@ const ChatMessage = ({ role, content }: ChatMessageProps) => {
 
       <div
         className={cn(
-          "max-w-[70%] rounded-2xl px-4 py-3",
+          "max-w-[85%] sm:max-w-[70%] rounded-2xl px-3 sm:px-4 py-3",
           isUser
             ? "bg-primary text-primary-foreground rounded-br-md"
             : "glass-card text-card-foreground rounded-bl-md"

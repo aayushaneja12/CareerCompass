@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Menu, X, LogOut, Compass, Target, BarChart3, BookOpen, FileText, Lightbulb, GraduationCap, Upload, Info } from "lucide-react";
+import { LogOut, Compass, Target, BarChart3, BookOpen, FileText, Lightbulb, GraduationCap, Upload, Menu } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "@/components/Sidebar";
 import ChatMessage from "@/components/ChatMessage";
@@ -32,6 +32,7 @@ const Index = () => {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const { isSidebarCollapsed, setIsSidebarCollapsed } = useSidebarState();
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState("Chat");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -71,6 +72,23 @@ const Index = () => {
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
+
+  useEffect(() => {
+    setIsMobileSidebarOpen(false);
+  }, [location.pathname, currentConversationId]);
+
+  useEffect(() => {
+    if (!isMobileSidebarOpen) {
+      return;
+    }
+
+    const { overflow } = document.body.style;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = overflow;
+    };
+  }, [isMobileSidebarOpen]);
 
   const loadConversations = async () => {
     try {
@@ -215,43 +233,73 @@ const Index = () => {
     { icon: GraduationCap, label: "Projects", color: "text-violet-500", path: "/projects" },
     { icon: BookOpen, label: "Progress", color: "text-rose-400", path: "/progress" },
   ];
+  const hasMessages = messages.length > 0;
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background">
-      <Sidebar
-        isCollapsed={isSidebarCollapsed}
-        onNewChat={createNewChat}
-        chatHistory={conversations.map(conv => ({ id: conv.id, title: conv.title }))}
-        onSelectChat={selectChat}
-        currentChatId={currentConversationId || ""}
+    <div className="flex h-dvh md:h-screen w-full overflow-hidden bg-background">
+      <div className="hidden md:block">
+        <Sidebar
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          onNewChat={createNewChat}
+          chatHistory={conversations.map(conv => ({ id: conv.id, title: conv.title }))}
+          onSelectChat={selectChat}
+          currentChatId={currentConversationId || ""}
+        />
+      </div>
+
+      <div
+        className={cn(
+          "fixed inset-0 z-40 bg-black/40 transition-opacity duration-200 md:hidden",
+          isMobileSidebarOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        )}
+        onClick={() => setIsMobileSidebarOpen(false)}
       />
+
+      <div
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 transition-transform duration-300 ease-out md:hidden",
+          isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <Sidebar
+          isCollapsed={false}
+          onToggleCollapse={() => setIsMobileSidebarOpen(false)}
+          onNewChat={createNewChat}
+          chatHistory={conversations.map(conv => ({ id: conv.id, title: conv.title }))}
+          onSelectChat={selectChat}
+          currentChatId={currentConversationId || ""}
+          onNavigate={() => setIsMobileSidebarOpen(false)}
+        />
+      </div>
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="border-b border-border/50 bg-card/80 backdrop-blur-lg px-5 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+        <header className="border-b border-border/50 bg-card/80 backdrop-blur-lg px-3 py-3 sm:px-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                className="hover:bg-muted rounded-xl w-9 h-9"
+                className="h-8 w-8 rounded-lg md:hidden"
+                onClick={() => setIsMobileSidebarOpen(true)}
+                aria-label="Open sidebar"
               >
-                {isSidebarCollapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
+                <Menu className="h-4 w-4" />
               </Button>
-              <div>
+              <div className="min-w-0">
                 <h1 className="text-base font-bold text-foreground flex items-center gap-2">
                   <Compass className="w-4 h-4 text-primary" />
                   CareerCompass
                 </h1>
-                <p className="text-xs text-muted-foreground">AI Career Readiness Assistant</p>
+                <p className="text-xs text-muted-foreground truncate">AI Career Readiness Assistant</p>
               </div>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex w-full items-center justify-end gap-2 sm:w-auto sm:gap-1.5">
               <select
                 value={mode}
                 onChange={(e) => handleModeChange(e.target.value)}
-                className="h-8 rounded-lg border border-input bg-background px-2 text-xs"
+                className="h-8 min-w-0 flex-1 rounded-lg border border-input bg-background px-2 text-xs sm:flex-none"
               >
                 <option>Chat</option>
                 <option>Skill Gap</option>
@@ -266,8 +314,8 @@ const Index = () => {
                 onClick={handleLogout}
                 className="hover:bg-destructive/10 hover:text-destructive rounded-xl text-xs h-8"
               >
-                <LogOut className="w-3.5 h-3.5 mr-1.5" />
-                Logout
+                <LogOut className="w-3.5 h-3.5 sm:mr-1.5" />
+                <span className="hidden sm:inline">Logout</span>
               </Button>
             </div>
           </div>
@@ -276,22 +324,23 @@ const Index = () => {
         {/* Chat Container */}
         <div className="flex-1 flex overflow-hidden">
           <div className="flex-1 flex flex-col min-w-0">
-            <div className="flex-1 overflow-y-auto">
-              {messages.length === 0 ? (
-                <div className="h-full flex items-center justify-center p-6">
-                  <div className="text-center max-w-2xl">
+            <div className={cn("flex-1", hasMessages ? "overflow-y-auto" : "overflow-hidden") }>
+              {!hasMessages ? (
+                <div className="h-full overflow-y-auto no-scrollbar px-3 sm:px-6">
+                  <div className="min-h-full flex items-start justify-center py-6 sm:py-8 lg:items-center">
+                    <div className="text-center max-w-2xl px-2 sm:px-0">
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 mb-6 gold-glow">
                       <Compass className="w-8 h-8 text-primary" />
                     </div>
-                    <h2 className="text-2xl font-bold text-foreground mb-2 tracking-tight">
+                    <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-2 tracking-tight">
                       Welcome to CareerCompass
                     </h2>
-                    <p className="text-muted-foreground mb-6 text-sm">
+                    <p className="text-muted-foreground mb-5 text-sm">
                       Your AI-powered guide to career readiness. Here's what I can help with:
                     </p>
 
                     {/* Feature tiles */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
                       {featureTiles.map((item, index) => {
                         const Icon = item.icon;
                         return (
@@ -299,7 +348,7 @@ const Index = () => {
                             key={index}
                             type="button"
                             onClick={() => navigate(item.path)}
-                            className="glass-card rounded-xl p-4 hover-lift cursor-pointer group text-center"
+                            className="glass-card rounded-xl p-3 sm:p-4 hover-lift cursor-pointer group text-center"
                           >
                             <Icon className={cn("w-5 h-5 mx-auto mb-2", item.color)} />
                             <p className="text-xs text-muted-foreground group-hover:text-foreground transition-colors duration-200">
@@ -320,7 +369,7 @@ const Index = () => {
                     />
                     <Button
                       onClick={() => fileInputRef.current?.click()}
-                      className="px-8 h-11 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 hover:scale-105"
+                      className="w-full sm:w-auto px-4 sm:px-8 h-11 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 hover:scale-105"
                     >
                       <Upload className="w-4 h-4 mr-2" />
                       Upload Document (CV / Recommendation Letter)
@@ -331,15 +380,16 @@ const Index = () => {
                       <Button variant="outline" size="sm" onClick={() => navigate("/skill-gap")}>Analyze Skills</Button>
                       <Button variant="outline" size="sm" onClick={() => navigate("/roadmap")}>Generate Roadmap</Button>
                     </div>
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div className="py-4 max-w-3xl mx-auto">
+                <div className="py-3 sm:py-4 max-w-3xl mx-auto w-full">
                   {messages.map((message) => (
                     <ChatMessage key={message.id} role={message.role} content={message.content} />
                   ))}
                   {isLoading && (
-                    <div className="flex gap-3 px-6 py-3">
+                    <div className="flex gap-3 px-3 sm:px-6 py-3">
                       <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
                         <div className="w-4 h-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
                       </div>
