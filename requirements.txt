@@ -1,29 +1,13 @@
-# Core backend
+# Backend runtime
 fastapi
 uvicorn
-python-dotenv
 pydantic
+python-dotenv
 
-# Database / Supabase
+# LangChain / agent graph
+langchain-core
+langchain-groq
+langgraph
+
+# Database client
 supabase
-psycopg2-binary
-sqlalchemy
-
-# AI / NLP
-openai
-langchain
-huggingface-hub
-tiktoken
-spacy
-
-# Data handling
-pandas
-numpy
-
-# Web UI (optional)
-streamlit
-jinja2
-
-# Utility
-requests
-python-dateutil
